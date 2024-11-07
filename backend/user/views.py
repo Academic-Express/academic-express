@@ -13,7 +13,7 @@ from utils.exceptions import CustomValidationError, ErrorSerializer
 from .exceptions import PasswordNotMatch, UserDoesNotExist
 from .models import User
 from .serializers import (ChangePasswordSerializer, RegisterSerializer,
-                          UserSerializer)
+                          UserSerializer, UserDetailSerializer)
 
 # Create your views here.
 
@@ -34,7 +34,7 @@ class CustomBackend(ModelBackend):
     operation_id='register',
     request=RegisterSerializer,
     responses={
-        201: OpenApiResponse(RegisterSerializer, description='注册成功'),
+        201: OpenApiResponse(UserDetailSerializer, description='注册成功'),
         400: OpenApiResponse(ErrorSerializer, description='参数错误'),
     },
 )
@@ -49,7 +49,9 @@ def register(request: Request):
         raise CustomValidationError(serializer.errors)
 
     serializer.save()
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    response_serializer = UserDetailSerializer(serializer.instance)
+    return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UserView(APIView):
@@ -58,7 +60,7 @@ class UserView(APIView):
     @extend_schema(
         operation_id='get_current_user',
         responses={
-            200: OpenApiResponse(UserSerializer, description='获取成功'),
+            200: OpenApiResponse(UserDetailSerializer, description='获取成功'),
             400: OpenApiResponse(ErrorSerializer, description='参数错误'),
             401: OpenApiResponse(ErrorSerializer, description='未登录'),
         },
@@ -67,14 +69,14 @@ class UserView(APIView):
         """
         获取当前登录用户信息。
         """
-        serializer = UserSerializer(request.user)
+        serializer = UserDetailSerializer(request.user)
         return Response(serializer.data)
 
     @extend_schema(
         operation_id='edit_user_profile',
-        request=UserSerializer,
+        request=UserDetailSerializer,
         responses={
-            200: OpenApiResponse(UserSerializer, description='修改成功'),
+            200: OpenApiResponse(UserDetailSerializer, description='修改成功'),
             400: OpenApiResponse(ErrorSerializer, description='参数错误'),
             401: OpenApiResponse(ErrorSerializer, description='未登录'),
         },
@@ -83,7 +85,7 @@ class UserView(APIView):
         """
         更新当前登录用户信息。
         """
-        serializer = UserSerializer(request.user, data=request.data)
+        serializer = UserDetailSerializer(request.user, data=request.data)
         if not serializer.is_valid():
             raise CustomValidationError(serializer.errors)
 
