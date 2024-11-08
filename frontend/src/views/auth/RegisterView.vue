@@ -79,7 +79,7 @@ const onRegister = handleSubmit(async (values, ctx) => {
     let detail = t('toast.unknownError')
     if (error instanceof AxiosError && error.response?.data) {
       const data = error.response.data as ErrorResponse
-      detail = data.detail
+      detail = data.detail ?? detail
       if (data.code === 'validation_error') {
         if (data.fields?.username?.some(e => e.code === 'unique')) {
           detail = t('toast.usernameExists')

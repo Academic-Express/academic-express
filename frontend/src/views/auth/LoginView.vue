@@ -56,7 +56,7 @@ async function onLogin() {
     let detail = t('toast.unknownError')
     if (error instanceof AxiosError && error.response?.data) {
       const data = error.response.data as ErrorResponse
-      detail = data.detail
+      detail = data.detail ?? detail
       if (data.code === 'no_active_account') {
         detail = t('toast.invalidCredentials')
       }
