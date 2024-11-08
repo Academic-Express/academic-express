@@ -26,6 +26,8 @@ services:
     build:
       context: backend
       dockerfile: Dockerfile
+      args:
+        - PIP_EXTRA_ARGS=${PIP_EXTRA_ARGS:-}
     container_name: app
     environment:
       DB_NAME: ${DB_NAME}
