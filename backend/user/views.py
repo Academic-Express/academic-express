@@ -13,7 +13,7 @@ from utils.exceptions import CustomValidationError, ErrorSerializer
 from .exceptions import PasswordNotMatch, UserDoesNotExist
 from .models import User
 from .serializers import (ChangePasswordSerializer, RegisterSerializer,
-                          UserSerializer, UserDetailSerializer)
+                          UserDetailSerializer, UserSerializer)
 
 # Create your views here.
 
