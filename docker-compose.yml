@@ -1,0 +1,72 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      TZ: Asia/Shanghai
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - db_network
+    secrets:
+      - db_root_password
+      - db_password
+
+  app:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: app
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      DB_HOST: mysql
+      DB_PORT: 3306
+      SECRET_KEY_FILE: /run/secrets/secret_key
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - db_network
+      - app_network
+    secrets:
+      - db_password
+      - secret_key
+
+  nginx:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - app_network
+
+networks:
+  app_network:
+  db_network:
+
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password
+  db_password:
+    file: ./secrets/db_password
+  secret_key:
+    file: ./secrets/secret_key
+
+volumes:
+  db_data:
