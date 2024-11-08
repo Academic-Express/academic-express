@@ -8,11 +8,14 @@ djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 drf-spectacular==0.27.2
 flake8==7.1.1
+gunicorn==23.0.0
 inflection==0.5.1
 isort==5.13.2
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 mccabe==0.7.0
+mysqlclient==2.2.5
+packaging==24.2
 pycodestyle==2.12.1
 pyflakes==3.2.0
 PyJWT==2.9.0
