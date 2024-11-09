@@ -1,7 +1,6 @@
 services:
   mysql:
     image: mysql:latest
-    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
       MYSQL_DATABASE: ${DB_NAME}
@@ -28,7 +27,6 @@ services:
       dockerfile: Dockerfile
       args:
         - PIP_EXTRA_ARGS=${PIP_EXTRA_ARGS:-}
-    container_name: app
     environment:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -50,7 +48,6 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
-    container_name: nginx
     ports:
       - "80:80"
     depends_on:
