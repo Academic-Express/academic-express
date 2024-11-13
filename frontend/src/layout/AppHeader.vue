@@ -22,13 +22,18 @@ const userMenuItems = reactive([
   },
   {
     label: t('userProfile'),
-    icon: 'pi pi-user',
+    icon: 'pi pi-address-book',
     command: goToUserProfile,
   },
   {
     label: t('userCenter'),
-    icon: 'pi pi-user-edit',
+    icon: 'pi pi-user',
     command: () => router.push({ name: 'user-center' }),
+  },
+  {
+    label: t('userSettings'),
+    icon: 'pi pi-cog',
+    command: () => router.push({ name: 'user-settings' }),
   },
   {
     label: t('logout'),
@@ -56,9 +61,9 @@ function logout() {
 
 <template>
   <header
-    class="z-100 sticky top-0 border-b border-slate-300 bg-surface-0/60 backdrop-blur dark:border-slate-600 dark:bg-transparent"
+    class="sticky top-0 z-20 border-b border-slate-300 bg-surface-0/60 backdrop-blur dark:border-slate-600 dark:bg-transparent"
   >
-    <div class="container mx-auto">
+    <div class="container mx-auto px-8">
       <div class="flex h-16 items-center">
         <RouterLink to="/">
           <h1 class="text-xl font-semibold">{{ t('app.name') }}</h1>
@@ -139,5 +144,6 @@ function logout() {
   "userProfile": "个人主页",
   "userCenter": "用户中心",
   "logout": "退出登录",
+  "userSettings": "编辑资料",
 }
 </i18n>
