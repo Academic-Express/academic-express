@@ -41,13 +41,16 @@
   font-weight: normal;
 }
 
+:root {
+  font-size: 15px;
+}
+
 body {
   min-height: 100vh;
   padding: 0;
   color: var(--text-color);
   background-color: var(--surface-ground);
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
