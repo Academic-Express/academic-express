@@ -46,6 +46,13 @@ export interface UserDetail extends User {
   last_login: string
 }
 
+export interface PatchProfileRequest {
+  nickname: string
+  url: string
+  email: string
+  phone: string
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -72,4 +79,8 @@ export function getCurrentUser() {
 
 export function getUserById(id: number) {
   return client.get<User>(URLS.getUserById(id))
+}
+
+export function patchProfile(payload: PatchProfileRequest) {
+  return client.patch<UserDetail>(URLS.getCurrentUser, payload)
 }
