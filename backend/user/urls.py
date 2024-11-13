@@ -13,4 +13,5 @@ urlpatterns = [
     path('profile', views.UserView.as_view(), name='get_current_user'),
     path('profile/<int:pk>', views.get_user_by_id, name='get_user_by_id'),
     path('change-password', views.change_password, name='change_password'),
+    path('avatar', views.upload_avatar, name='upload_avatar'),
 ]
