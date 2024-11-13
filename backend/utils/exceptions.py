@@ -1,5 +1,7 @@
+from django.conf import settings
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException, ErrorDetail
+from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 
@@ -34,11 +36,22 @@ class ErrorSerializer(serializers.Serializer):
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
+    if response is None and not settings.DEBUG:
+        import traceback
+        traceback.print_exc()
+
+        response = Response({
+            'detail': '未知错误。',
+            'code': 'error',
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     if response is not None:
         response.data['status_code'] = response.status_code
 
         if 'code' not in response.data:
             if isinstance(exc, APIException) and isinstance(exc.detail, ErrorDetail):
                 response.data['code'] = exc.detail.code or 'error'
+            else:
+                response.data['code'] = 'error'
 
     return response
