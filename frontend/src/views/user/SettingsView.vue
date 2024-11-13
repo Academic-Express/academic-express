@@ -4,38 +4,34 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen w-full items-center justify-center overflow-hidden bg-surface-50 dark:bg-surface-950"
-  >
-    <main class="mt-[-50px] flex flex-col items-center justify-center">
+  <div class="flex flex-1 items-center justify-center overflow-hidden">
+    <main
+      class="flex max-w-[960px] flex-1 flex-col items-center justify-center"
+    >
       <div
-        class="mb-4 w-full bg-surface-0 px-20 py-8 dark:bg-surface-900 sm:px-32"
-        style="border-radius: 20px; transform: translateY(-50px)"
+        class="mb-4 w-full bg-surface-0 p-10 dark:bg-surface-900 sm:px-20"
+        style="border-radius: 20px"
       >
-        <div
-          class="mt-8 flex items-center justify-center space-x-4 text-center"
-        >
+        <div class="my-6 flex items-center justify-center space-x-6">
           <img
             src="https://avatars.githubusercontent.com/t/11448713?s=116&v=4"
             alt="Avatar"
             class="inline h-24 w-24 rounded-full"
           />
           <div
-            class="min-w-40 text-left text-3xl font-medium text-surface-900 dark:text-surface-0"
+            class="min-w-32 text-left text-3xl font-medium text-surface-900 dark:text-surface-0 sm:min-w-48"
           >
             xxx, 您好
           </div>
-          <Button class="text-surface-900 dark:text-surface-0">
-            {{ t('editImage') }}
-          </Button>
+          <Button :label="t('editImage')"></Button>
         </div>
       </div>
       <div class="flex w-full justify-center space-x-4">
         <div
           class="w-1/2 bg-surface-0 px-8 py-8 dark:bg-surface-900"
-          style="border-radius: 20px; transform: translateY(-50px)"
+          style="border-radius: 20px"
         >
-          <div class="card flex flex-col gap-4">
+          <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2">
               <label for="name1">{{ t('username') }}</label>
               <InputText id="name1" type="text" />
@@ -49,23 +45,21 @@ const { t } = useI18n()
               <InputText id="age1" type="text" />
             </div>
             <div class="flex w-full justify-center">
-              <Button label="submitEdit" :fluid="false">{{
-                t('submitEdit')
-              }}</Button>
+              <Button :label="t('submitEdit')"></Button>
             </div>
           </div>
         </div>
         <div
           class="w-1/2 bg-surface-0 px-8 py-8 dark:bg-surface-900"
-          style="border-radius: 20px; transform: translateY(-50px)"
+          style="border-radius: 20px"
         >
-          <div class="flex flex-wrap gap-2">
-            <label for="address">{{ t('description') }}</label>
-            <Textarea id="address" rows="4" fluid auto-resize />
+          <div class="flex flex-wrap gap-4">
+            <div class="flex w-full flex-col gap-2">
+              <label for="address">{{ t('description') }}</label>
+              <Textarea id="address" rows="4" fluid auto-resize></Textarea>
+            </div>
             <div class="flex w-full justify-center">
-              <Button label="submitEdit" :fluid="false">{{
-                t('submitEdit')
-              }}</Button>
+              <Button :label="t('submitEdit')"></Button>
             </div>
           </div>
         </div>
