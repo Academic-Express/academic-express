@@ -1,5 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
+from django.db.models import F, Q
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -108,6 +108,9 @@ def get_user_by_id(request: Request, pk):
     """
     try:
         user = User.objects.get(pk=pk)
+        user.view_count = F('view_count') + 1
+        user.save(update_fields=['view_count'])
+        user.refresh_from_db()
     except User.DoesNotExist:
         raise UserDoesNotExist()
     serializer = UserSerializer(user)
