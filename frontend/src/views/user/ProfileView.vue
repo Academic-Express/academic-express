@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue'
 import { AxiosError } from 'axios'
@@ -22,32 +22,28 @@ const displayUser = computed(() =>
   isSelf.value ? userStore.user : fetchedUser.value,
 )
 
-watch(
-  () => props.userId,
-  async userId => {
-    if (isSelf.value) return
+watchEffect(async () => {
+  if (isSelf.value) return
 
-    try {
-      const response = await getUserById(userId)
-      fetchedUser.value = response.data
-    } catch (error) {
-      console.error(error)
+  try {
+    const response = await getUserById(props.userId)
+    fetchedUser.value = response.data
+  } catch (error) {
+    console.error(error)
 
-      let detail = t('toast.unknownError')
-      if (error instanceof AxiosError) {
-        detail = error.response?.data.detail ?? detail
-      }
-
-      toast.add({
-        severity: 'error',
-        summary: t('toast.error'),
-        detail,
-        life: 5000,
-      })
+    let detail = t('toast.unknownError')
+    if (error instanceof AxiosError) {
+      detail = error.response?.data.detail ?? detail
     }
-  },
-  { immediate: true },
-)
+
+    toast.add({
+      severity: 'error',
+      summary: t('toast.error'),
+      detail,
+      life: 5000,
+    })
+  }
+})
 </script>
 
 <template>
