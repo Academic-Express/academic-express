@@ -37,6 +37,9 @@ export interface User {
   username: string
   nickname: string
   url: string
+  scholar_url: string
+  intro: string
+  view_count: number
   date_joined: string
 }
 
