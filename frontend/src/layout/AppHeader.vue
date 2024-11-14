@@ -117,7 +117,7 @@ function logout() {
             <Button
               v-if="!userStore.user"
               as="router-link"
-              to="/auth/login"
+              :to="{ name: 'login', query: { redirect: route.fullPath } }"
               :label="t('login')"
               variant="text"
               severity="primary"
