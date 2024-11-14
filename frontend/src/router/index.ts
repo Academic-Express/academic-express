@@ -34,10 +34,10 @@ const router = createRouter({
           component: () => import('../views/user/SettingsView.vue'),
         },
         {
-          path: 'user/profile/:userId',
+          path: 'user/profile/:userId(\\d+)',
           name: 'user-profile',
           component: () => import('../views/user/ProfileView.vue'),
-          props: true,
+          props: route => ({ userId: Number(route.params.userId) }),
         },
       ],
     },
