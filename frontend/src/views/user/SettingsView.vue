@@ -22,11 +22,11 @@ const validationSchema = toTypedSchema(
     phone: z.string().refine(v => /^1[3-9]\d{9}$/.test(v), {
       message: t('validation.phone.invalid'),
     }),
-    url: z.string().url(t('validation.url.invalid')),
+    url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
   }),
 )
 
-const { handleSubmit, meta, isSubmitting } = useForm({
+const { handleSubmit, errors, meta, isSubmitting } = useForm({
   validationSchema,
   initialValues: {
     nickname: userStore.user?.nickname ?? '',
@@ -43,7 +43,9 @@ const { value: url } = useField<string>('url')
 
 const onEditProfile = handleSubmit(async values => {
   try {
-    await patchProfile(values)
+    const response = await patchProfile(values)
+
+    userStore.user = response.data
 
     toast.add({
       severity: 'success',
@@ -104,18 +106,54 @@ const onEditProfile = handleSubmit(async values => {
             <div class="flex flex-col gap-2">
               <label for="nickname">{{ t('nickname') }}</label>
               <InputText v-model="nickname" id="nickname" type="text" />
+              <Message
+                v-if="errors.nickname"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ errors.nickname }}</span>
+              </Message>
             </div>
             <div class="flex flex-col gap-2">
               <label for="url">{{ t('url') }}</label>
               <InputText v-model="url" id="url" type="text" />
+              <Message
+                v-if="errors.url"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ errors.url }}</span>
+              </Message>
             </div>
             <div class="flex flex-col gap-2">
               <label for="email">{{ t('email') }}</label>
               <InputText v-model="email" id="email" type="text" />
+              <Message
+                v-if="errors.email"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ errors.email }}</span>
+              </Message>
             </div>
             <div class="flex flex-col gap-2">
               <label for="phone"> {{ t('phone') }}</label>
               <InputText v-model="phone" id="phone" type="text" />
+              <Message
+                v-if="errors.phone"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ errors.phone }}</span>
+              </Message>
             </div>
             <div class="flex w-full justify-center">
               <Button
