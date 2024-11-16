@@ -2,7 +2,9 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import F, Q
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes)
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -85,7 +87,7 @@ class UserView(APIView):
         """
         更新当前登录用户信息。
         """
-        serializer = UserDetailSerializer(request.user, data=request.data)
+        serializer = UserDetailSerializer(request.user, data=request.data, partial=True)
         if not serializer.is_valid():
             raise CustomValidationError(serializer.errors)
 
@@ -143,3 +145,31 @@ def change_password(request: Request):
     user.set_password(serializer.data['new_password'])
     user.save()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    operation_id='upload_avatar',
+    request={'multipart/form-data': {'type': 'object',
+                                     'properties': {'avatar': {'type': 'string', 'format': 'binary'}}}},
+    responses={
+        200: OpenApiResponse(UserDetailSerializer, description='上传成功'),
+        400: OpenApiResponse(ErrorSerializer, description='参数错误'),
+        401: OpenApiResponse(ErrorSerializer, description='未登录'),
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser])
+def upload_avatar(request):
+    """
+    上传用户头像。
+    """
+    if 'avatar' not in request.FILES:
+        raise CustomValidationError({'avatar': ['请选择要上传的图片。']})
+
+    user = request.user
+    user.avatar = request.FILES['avatar']
+    user.save()
+
+    serializer = UserDetailSerializer(user)
+    return Response(serializer.data)

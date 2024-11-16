@@ -13,6 +13,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=32, verbose_name='手机号')
     url = models.URLField(max_length=255, verbose_name='个人主页', blank=True)
     scholar_url = models.URLField(max_length=255, verbose_name='学术主页', blank=True)
+    avatar = models.ImageField(upload_to='avatars/', verbose_name='头像', blank=True)
 
     intro = models.TextField(verbose_name='个人简介', blank=True)
 
