@@ -2,7 +2,8 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import F, Q
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes)
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request

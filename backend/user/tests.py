@@ -1,7 +1,7 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 from .models import User
 
@@ -262,20 +262,20 @@ class UserTests(APITestCase):
         测试上传头像。
         """
         url = reverse('user:upload_avatar')
-        
+
         # 未登录时，返回 401
         image_data = b'fake-image-data'
         avatar = SimpleUploadedFile('avatar.jpg', image_data, content_type='image/jpeg')
         response = self.client.post(url, {'avatar': avatar}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        
+
         # 登录后上传头像
         self.client.force_authenticate(user=self.test_user)
         avatar = SimpleUploadedFile('avatar.jpg', image_data, content_type='image/jpeg')
         response = self.client.post(url, {'avatar': avatar}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['avatar'])
-        
+
         # 不提供头像文件时返回 400
         response = self.client.post(url, {}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
