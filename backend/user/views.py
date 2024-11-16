@@ -86,7 +86,7 @@ class UserView(APIView):
         """
         更新当前登录用户信息。
         """
-        serializer = UserDetailSerializer(request.user, data=request.data)
+        serializer = UserDetailSerializer(request.user, data=request.data, partial=True)
         if not serializer.is_valid():
             raise CustomValidationError(serializer.errors)
 

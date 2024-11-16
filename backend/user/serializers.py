@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'nickname', 'url', 'avatar',
                  'scholar_url', 'intro', 'view_count', 'date_joined']
-        read_only_fields = ['id', 'username', 'view_count', 'date_joined']
+        read_only_fields = ['id', 'username', 'avatar', 'view_count', 'date_joined']
 
 
 class UserDetailSerializer(UserSerializer):
