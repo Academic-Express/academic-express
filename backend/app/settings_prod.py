@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from .settings import *
+from .settings import *  # noqa: F403, F401
 
 DEBUG = False
 
