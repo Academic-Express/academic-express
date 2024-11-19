@@ -8,12 +8,14 @@ from tqdm import tqdm
 
 from pub.schema import ArxivAuthorSchema, ArxivEntrySchema
 
+session = requests.Session()
+
 
 def fetch_arxiv_metadata(arxiv_ids: list[str]) -> list[ArxivEntrySchema]:
     url = "https://export.arxiv.org/api/query"
     data = {"id_list": ",".join(arxiv_ids), "max_results": len(arxiv_ids)}
 
-    response = requests.post(url, data=data)
+    response = session.post(url, data=data)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch metadata: {response.status_code}")
 
