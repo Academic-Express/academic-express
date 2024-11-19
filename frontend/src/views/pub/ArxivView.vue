@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue'
 
-import { getArxivEntry, type ArxivEntry, type ArxivAuthor } from '@/services/api';
+import {
+  getArxivEntry,
+  type ArxivEntry,
+  type ArxivAuthor,
+} from '@/services/api'
 
 const props = defineProps<{
-  pubId: string
+  arxivId: string
 }>()
 
 const fetchedArxivEntry = ref<ArxivEntry | null>(null)
 const fetchedArxivAuthors = ref<ArxivAuthor[]>([])
 
-watchEffect(async() => {
+watchEffect(async () => {
   try {
-    const response = await getArxivEntry(props.pubId)
+    const response = await getArxivEntry(props.arxivId)
     fetchedArxivEntry.value = response.data
     fetchedArxivAuthors.value = response.data.authors
   } catch (error) {
@@ -30,7 +34,9 @@ watchEffect(async() => {
       <!-- Authors -->
       <div class="mb-4">
         <h2 class="text-lg font-bold">Authors:</h2>
-        <p>{{ fetchedArxivEntry?.authors.map(({ name }) => name).join(', ') }}</p>
+        <p>
+          {{ fetchedArxivEntry?.authors.map(({ name }) => name).join(', ') }}
+        </p>
       </div>
 
       <!-- Summary -->
@@ -58,11 +64,19 @@ watchEffect(async() => {
       <div class="mb-4">
         <p>
           <strong>Published:</strong>
-            {{ fetchedArxivEntry?.published ? new Date(fetchedArxivEntry.published).toLocaleString() : '' }}
+          {{
+            fetchedArxivEntry?.published
+              ? new Date(fetchedArxivEntry.published).toLocaleString()
+              : ''
+          }}
         </p>
         <p>
           <strong>Updated:</strong>
-          {{ fetchedArxivEntry?.updated ? new Date(fetchedArxivEntry.updated).toLocaleString() : '' }}
+          {{
+            fetchedArxivEntry?.updated
+              ? new Date(fetchedArxivEntry.updated).toLocaleString()
+              : ''
+          }}
         </p>
       </div>
 
