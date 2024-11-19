@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 
@@ -7,8 +8,10 @@ import { getArxivEntry, type ArxivEntry } from '@/services/api'
 
 const props = defineProps<{
   arxivId: string
+  slug?: string
 }>()
 
+const router = useRouter()
 const { t } = useI18n()
 
 const arxivEntry = ref<ArxivEntry | null>(null)
@@ -27,6 +30,15 @@ watchEffect(async () => {
     arxivEntry.value = response.data
   } catch (error) {
     console.error(error)
+  }
+})
+
+watchEffect(() => {
+  if (arxivEntry.value && props.slug !== arxivEntry.value.slug) {
+    router.replace({
+      name: 'pub-arxiv',
+      params: { arxivId: props.arxivId, slug: arxivEntry.value.slug },
+    })
   }
 })
 </script>
