@@ -149,8 +149,9 @@ def change_password(request: Request):
 
 @extend_schema(
     operation_id='upload_avatar',
-    request={'multipart/form-data': {'type': 'object',
-                                     'properties': {'avatar': {'type': 'string', 'format': 'binary'}}}},
+    request={'multipart/form-data': {
+        'type': 'object',
+        'properties': {'avatar': {'type': 'string', 'format': 'binary'}}}},
     responses={
         200: OpenApiResponse(UserDetailSerializer, description='上传成功'),
         400: OpenApiResponse(ErrorSerializer, description='参数错误'),

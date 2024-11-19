@@ -1,7 +1,8 @@
-from django.urls import reverse
-from rest_framework.test import APIClient, APITestCase
-from rest_framework import status
 from datetime import datetime
+
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 from .models import ArxivEntry
 
@@ -53,7 +54,8 @@ class PubTests(APITestCase):
         self.test_arxiv_entry = ArxivEntry.objects.create(**self.test_arxiv_entry_data)
 
     def test_get_arxiv_entry(self):
-        url = reverse('pub:get_arxiv_entry', kwargs={'arxiv_id': self.test_arxiv_entry_data['arxiv_id']})
+        url = reverse('pub:get_arxiv_entry',
+                      kwargs={'arxiv_id': self.test_arxiv_entry_data['arxiv_id']})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for k, v in self.test_arxiv_entry_data.items():
