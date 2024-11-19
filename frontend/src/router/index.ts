@@ -40,9 +40,10 @@ const router = createRouter({
           props: route => ({ userId: Number(route.params.userId) }),
         },
         {
-          path: 'pub/1',
-          name: 'pub-temp',
-          component: () => import('../views/content/ArxivView.vue'),
+          path: 'pub/arxiv/:pubId',
+          name: 'pub-arxiv',
+          component: () => import('../views/pub/ArxivView.vue'),
+          props: true,
         },
       ],
     },
