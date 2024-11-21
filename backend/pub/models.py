@@ -39,3 +39,43 @@ class ArxivEntry(models.Model):
     def make_slug(self):
         if not self.slug:
             self.slug = slugify(self.title)
+
+
+class GithubRepo(models.Model):
+    """
+    GitHub 仓库。
+    """
+    repo_id = models.CharField(max_length=255, primary_key=True, verbose_name='仓库 ID')
+    name = models.CharField(max_length=255, verbose_name='名称')
+    full_name = models.CharField(max_length=255, verbose_name='全名')
+    description = models.TextField(verbose_name='描述', blank=True)
+    url = models.URLField(max_length=255, verbose_name='链接')
+    owner = models.JSONField(verbose_name='所有者')
+
+    created_at = models.DateTimeField(verbose_name='创建时间')
+    updated_at = models.DateTimeField(verbose_name='更新时间')
+    pushed_at = models.DateTimeField(verbose_name='推送时间')
+
+    homepage = models.URLField(max_length=255, verbose_name='主页', blank=True)
+    size = models.IntegerField(default=0, verbose_name='大小')
+    language = models.CharField(max_length=255, verbose_name='语言')
+    license = models.CharField(max_length=255, verbose_name='许可', blank=True)
+    topics = models.JSONField(verbose_name='主题')
+
+    stargazers_count = models.IntegerField(default=0, verbose_name='Star 数量')
+    watchers_count = models.IntegerField(default=0, verbose_name='Watch 数量')
+    forks_count = models.IntegerField(default=0, verbose_name='Fork 数量')
+    open_issues_count = models.IntegerField(default=0, verbose_name='开放 Issue 数量')
+    network_count = models.IntegerField(default=0, verbose_name='网络数量')
+    subscribers_count = models.IntegerField(default=0, verbose_name='订阅者数量')
+
+    readme = models.TextField(verbose_name='README', blank=True)
+
+    view_count = models.IntegerField(default=0, verbose_name='浏览次数')
+
+    class Meta:
+        verbose_name = 'GitHub 仓库'
+        verbose_name_plural = 'GitHub 仓库'
+
+    def __str__(self):
+        return self.full_name

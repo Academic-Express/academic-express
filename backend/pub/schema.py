@@ -24,3 +24,44 @@ class ArxivAuthorSchema(TypedDict):
     """
     name: str
     affiliation: NotRequired[str]
+
+
+class GithubRepoSchema(TypedDict):
+    """
+    GitHub 仓库。
+    """
+    repo_id: str
+    name: str
+    full_name: str
+    description: str
+    url: str
+    owner: 'GithubAccountSchema'
+
+    created_at: str
+    updated_at: str
+    pushed_at: str
+
+    homepage: str
+    size: int
+    language: str
+    license: str
+    topics: list[str]
+
+    stargazers_count: int
+    watchers_count: int
+    forks_count: int
+    open_issues_count: int
+    network_count: int
+    subscribers_count: int
+
+    readme: str
+
+
+class GithubAccountSchema(TypedDict):
+    """
+    GitHub 用户。
+    """
+    login: str
+    id: int
+    type: str
+    avatar_url: str
