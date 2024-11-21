@@ -3,12 +3,13 @@ import json
 import multiprocessing
 import xml.etree.ElementTree as ET
 
-import requests
 from tqdm import tqdm
 
 from pub.schema import ArxivAuthorSchema, ArxivEntrySchema
 
-session = requests.Session()
+from . import common
+
+session = common.get_session()
 
 
 def fetch_arxiv_metadata(arxiv_ids: list[str]) -> list[ArxivEntrySchema]:
@@ -88,12 +89,7 @@ def main(args):
         out_file = open(args.output, "w")
 
     if args.save:
-        import os
-
-        import django
-
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
-        django.setup()
+        common.setup_database()
 
     with multiprocessing.Pool(processes=args.jobs) as pool:
         for results in tqdm(pool.imap_unordered(fetch_arxiv_metadata, batches), total=len(batches)):

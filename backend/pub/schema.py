@@ -1,4 +1,4 @@
-from typing import NotRequired, TypedDict
+from typing import NotRequired, Optional, TypedDict
 
 
 class ArxivEntrySchema(TypedDict):
@@ -24,3 +24,43 @@ class ArxivAuthorSchema(TypedDict):
     """
     name: str
     affiliation: NotRequired[str]
+
+
+class GithubRepoSchema(TypedDict):
+    """
+    GitHub 仓库。
+    """
+    repo_id: str
+    name: str
+    full_name: str
+    description: Optional[str]
+    html_url: str
+    owner: 'GithubAccountSchema'
+
+    created_at: str
+    updated_at: str
+    pushed_at: str
+
+    homepage: Optional[str]
+    size: int
+    language: Optional[str]
+    license: Optional[str]
+    topics: list[str]
+
+    stargazers_count: int
+    forks_count: int
+    open_issues_count: int
+    network_count: int
+    subscribers_count: int
+
+    readme: Optional[str]
+
+
+class GithubAccountSchema(TypedDict):
+    """
+    GitHub 用户。
+    """
+    login: str
+    id: int
+    type: str
+    avatar_url: str
