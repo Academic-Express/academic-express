@@ -61,7 +61,7 @@ export interface ArxivEntry {
   title: string
   summary: string
   authors: ArxivAuthor[]
-  comment: string
+  comment: string | null
   published: string
   updated: string
   primary_category: string
@@ -78,6 +78,42 @@ export interface ArxivAuthor {
   affiliation?: string
 }
 
+export interface GithubRepo {
+  repo_id: string
+  name: string
+  full_name: string
+  description: string | null
+  html_url: string
+  owner: GithubAccount
+
+  created_at: string
+  updated_at: string
+  pushed_at: string
+
+  homepage: string | null
+  size: number
+  language: string | null
+  license: string | null
+  topics: string[]
+
+  stargazers_count: number
+  forks_count: number
+  open_issues_count: number
+  network_count: number
+  subscribers_count: number
+
+  readme: string | null
+
+  view_count: number
+}
+
+export interface GithubAccount {
+  login: string
+  id: number
+  type: string
+  avatar_url: string
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -85,6 +121,7 @@ export const URLS = {
   getCurrentUser: '/v1/user/profile',
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
   getArxivEntry: (arxivId: string) => `/v1/pub/arxiv/${arxivId}`,
+  getGithubRepo: (owner: string, repo: string) => `/v1/pub/gh/${owner}/${repo}`,
 }
 
 export function login(payload: LoginRequest) {
@@ -113,4 +150,8 @@ export function patchProfile(payload: PatchProfileRequest) {
 
 export function getArxivEntry(arxivId: string) {
   return client.get<ArxivEntry>(URLS.getArxivEntry(arxivId))
+}
+
+export function getGithubRepo(owner: string, repo: string) {
+  return client.get<GithubRepo>(URLS.getGithubRepo(owner, repo))
 }
