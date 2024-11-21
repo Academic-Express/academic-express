@@ -22,6 +22,7 @@ services:
       - db_password
 
   app:
+    image: academic-express/backend
     build:
       context: backend
       dockerfile: Dockerfile
@@ -44,14 +45,22 @@ services:
       - db_password
       - secret_key
 
-  nginx:
+  frontend:
+    image: academic-express/frontend
     build:
       context: frontend
+      dockerfile: Dockerfile
+
+  nginx:
+    image: academic-express/nginx
+    build:
+      context: nginx
       dockerfile: Dockerfile
     ports:
       - "80:80"
     depends_on:
       - app
+      - frontend
     networks:
       - app_network
 
