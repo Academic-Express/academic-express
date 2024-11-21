@@ -1,4 +1,4 @@
-from typing import NotRequired, TypedDict
+from typing import NotRequired, Optional, TypedDict
 
 
 class ArxivEntrySchema(TypedDict):
@@ -33,18 +33,18 @@ class GithubRepoSchema(TypedDict):
     repo_id: str
     name: str
     full_name: str
-    description: str
-    url: str
+    description: Optional[str]
+    html_url: str
     owner: 'GithubAccountSchema'
 
     created_at: str
     updated_at: str
     pushed_at: str
 
-    homepage: str
+    homepage: Optional[str]
     size: int
-    language: str
-    license: str
+    language: Optional[str]
+    license: Optional[str]
     topics: list[str]
 
     stargazers_count: int
@@ -54,7 +54,7 @@ class GithubRepoSchema(TypedDict):
     network_count: int
     subscribers_count: int
 
-    readme: str
+    readme: Optional[str]
 
 
 class GithubAccountSchema(TypedDict):
