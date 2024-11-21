@@ -63,11 +63,10 @@ class GithubRepo(models.Model):
     topics = models.JSONField(verbose_name='主题')
 
     stargazers_count = models.IntegerField(default=0, verbose_name='Star 数量')
-    watchers_count = models.IntegerField(default=0, verbose_name='Watch 数量')
     forks_count = models.IntegerField(default=0, verbose_name='Fork 数量')
     open_issues_count = models.IntegerField(default=0, verbose_name='开放 Issue 数量')
     network_count = models.IntegerField(default=0, verbose_name='网络数量')
-    subscribers_count = models.IntegerField(default=0, verbose_name='订阅者数量')
+    subscribers_count = models.IntegerField(default=0, verbose_name='Watch 数量')
 
     readme = models.TextField(verbose_name='README', null=True, blank=True)
 

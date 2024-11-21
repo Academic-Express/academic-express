@@ -48,7 +48,6 @@ class GithubRepoSchema(TypedDict):
     topics: list[str]
 
     stargazers_count: int
-    watchers_count: int
     forks_count: int
     open_issues_count: int
     network_count: int
