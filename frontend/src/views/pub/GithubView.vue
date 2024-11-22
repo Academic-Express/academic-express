@@ -121,11 +121,9 @@ watchEffect(async () => {
       </div>
 
       <!-- README Section -->
-      <div class="mt-8" v-if="githubRepository">
+      <div class="mt-8" v-if="githubRepository?.readme">
         <div
-          v-html="
-            githubRepository.readme ? marked(githubRepository.readme) : ''
-          "
+          v-html="marked(githubRepository.readme)"
           class="prose markdown-body max-w-full"
         ></div>
       </div>
@@ -154,6 +152,5 @@ watchEffect(async () => {
   "_title": "{title} - @:app.name",
   "_fallbackTitle": "GitHub - @:app.name",
   "homepage": "主页",
-
 }
 </i18n>
