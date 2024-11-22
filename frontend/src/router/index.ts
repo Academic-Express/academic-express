@@ -45,6 +45,12 @@ const router = createRouter({
           component: () => import('../views/pub/ArxivView.vue'),
           props: true,
         },
+        {
+          path: 'pub/github/:owner/:repo',
+          name: 'pub-github',
+          component: () => import('../views/pub/GithubView.vue'),
+          props: true,
+        },
       ],
     },
     {
