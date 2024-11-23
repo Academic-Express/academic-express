@@ -67,7 +67,7 @@ const router = createRouter({
     {
       path: '/subscription',
       name: 'subscription',
-      component: () => import('../components/subscription.vue'),
+      component: () => import('../components/SubscriptionPanel.vue'),
     },
   ],
 })
