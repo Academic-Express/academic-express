@@ -37,6 +37,7 @@ export interface User {
   username: string
   nickname: string
   url: string
+  avatar: string
   scholar_url: string
   intro: string
   view_count: number
