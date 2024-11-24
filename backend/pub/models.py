@@ -41,6 +41,22 @@ class ArxivEntry(models.Model):
             self.slug = slugify(self.title)
 
 
+class ArxivCategory(models.Model):
+    """
+    ArXiv 分类。
+    """
+    category_id = models.CharField(max_length=255, primary_key=True, verbose_name='分类 ID')
+    name = models.CharField(max_length=255, verbose_name='名称')
+    description = models.TextField(verbose_name='描述')
+
+    class Meta:
+        verbose_name = 'ArXiv 分类'
+        verbose_name_plural = 'ArXiv 分类'
+
+    def __str__(self):
+        return self.name
+
+
 class GithubRepo(models.Model):
     """
     GitHub 仓库。

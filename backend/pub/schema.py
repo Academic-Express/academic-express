@@ -26,6 +26,15 @@ class ArxivAuthorSchema(TypedDict):
     affiliation: NotRequired[str]
 
 
+class ArxivCategorySchema(TypedDict):
+    """
+    ArXiv 分类。
+    """
+    category_id: str
+    name: str
+    description: str
+
+
 class GithubRepoSchema(TypedDict):
     """
     GitHub 仓库。
