@@ -115,14 +115,44 @@ export interface GithubAccount {
   avatar_url: string
 }
 
+export interface TopicSubscription {
+  id: number
+  topic: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TopicSubscriptionRequest {
+  topic: string
+}
+
+export interface ScholarSubscription {
+  id: number
+  scholar_name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ScholarSubscriptionRequest {
+  scholar_name: string
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
   register: '/v1/user/register',
   getCurrentUser: '/v1/user/profile',
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
+
   getArxivEntry: (arxivId: string) => `/v1/pub/arxiv/${arxivId}`,
   getGithubRepo: (owner: string, repo: string) => `/v1/pub/gh/${owner}/${repo}`,
+
+  getTopicSubscriptions: '/v1/sub/topics',
+  subscribeTopic: '/v1/sub/topics',
+  unsubscribeTopic: (id: number) => `/v1/sub/topics/${id}`,
+  getScholarSubscriptions: '/v1/sub/scholars',
+  subscribeScholar: '/v1/sub/scholars',
+  unsubscribeScholar: (id: number) => `/v1/sub/scholars/${id}`,
 }
 
 export function login(payload: LoginRequest) {
@@ -155,4 +185,28 @@ export function getArxivEntry(arxivId: string) {
 
 export function getGithubRepo(owner: string, repo: string) {
   return client.get<GithubRepo>(URLS.getGithubRepo(owner, repo))
+}
+
+export function getTopicSubscriptions() {
+  return client.get<TopicSubscription[]>(URLS.getTopicSubscriptions)
+}
+
+export function subscribeTopic(payload: TopicSubscriptionRequest) {
+  return client.post<TopicSubscription>(URLS.subscribeTopic, payload)
+}
+
+export function unsubscribeTopic(id: number) {
+  return client.delete<void>(URLS.unsubscribeTopic(id))
+}
+
+export function getScholarSubscriptions() {
+  return client.get<ScholarSubscription[]>(URLS.getScholarSubscriptions)
+}
+
+export function subscribeScholar(payload: ScholarSubscriptionRequest) {
+  return client.post<ScholarSubscription>(URLS.subscribeScholar, payload)
+}
+
+export function unsubscribeScholar(id: number) {
+  return client.delete<void>(URLS.unsubscribeScholar(id))
 }
