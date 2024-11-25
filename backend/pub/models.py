@@ -25,6 +25,8 @@ class ArxivEntry(models.Model):
     view_count = models.IntegerField(default=0, verbose_name='浏览次数')
     citation_count = models.IntegerField(default=0, verbose_name='引用次数')
 
+    synced = models.BooleanField(default=False, verbose_name='已同步')
+
     class Meta:
         verbose_name = 'ArXiv 论文'
         verbose_name_plural = 'ArXiv 论文'
@@ -87,6 +89,8 @@ class GithubRepo(models.Model):
     readme = models.TextField(verbose_name='README', null=True, blank=True)
 
     view_count = models.IntegerField(default=0, verbose_name='浏览次数')
+
+    synced = models.BooleanField(default=False, verbose_name='已同步')
 
     class Meta:
         verbose_name = 'GitHub 仓库'
