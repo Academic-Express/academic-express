@@ -107,16 +107,22 @@ def main(args):
 
 
 def save_results_to_db(results: list[ArxivEntrySchema]):
-    from pub.models import ArxivEntry
+    from django.db import transaction
+
+    from pub.models import ArxivEntry, ArxivEntryAuthor
 
     entries: list[ArxivEntry] = []
+    author_instances: list[ArxivEntryAuthor] = []
 
     for result in results:
         entry = ArxivEntry(**result)
         entry.make_slug()
         entries.append(entry)
+        author_instances.extend(entry.make_authors())
 
-    ArxivEntry.objects.bulk_create(entries, ignore_conflicts=True)
+    with transaction.atomic():
+        ArxivEntry.objects.bulk_create(entries, ignore_conflicts=True)
+        ArxivEntryAuthor.objects.bulk_create(author_instances)
 
 
 def parse_args(args=None):
