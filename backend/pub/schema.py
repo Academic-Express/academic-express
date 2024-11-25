@@ -1,6 +1,16 @@
 from typing import NotRequired, Optional, TypedDict
 
 
+class AuthorSchema(TypedDict):
+    """
+    作者。
+    """
+    first_name: str
+    middle_name: Optional[str]
+    last_name: str
+    affiliation: Optional[str]
+
+
 class ArxivEntrySchema(TypedDict):
     """
     ArXiv 论文。

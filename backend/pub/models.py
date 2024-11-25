@@ -1,7 +1,30 @@
 from django.db import models
 from django.utils.text import slugify
 
+from .utils import normalize_author
+
 # Create your models here.
+
+
+class ArxivEntryAuthor(models.Model):
+    """
+    ArXiv 论文作者。
+    """
+    arxiv_entry = models.ForeignKey('ArxivEntry', on_delete=models.CASCADE, verbose_name='ArXiv 论文')
+    first_name = models.CharField(max_length=255, verbose_name='名')
+    middle_name = models.CharField(max_length=255, verbose_name='中间名', null=True)
+    last_name = models.CharField(max_length=255, verbose_name='姓')
+    affiliation = models.CharField(max_length=255, verbose_name='机构', null=True)
+
+    class Meta:
+        verbose_name = 'ArXiv 论文作者'
+        verbose_name_plural = 'ArXiv 论文作者'
+        indexes = [
+            models.Index(fields=['first_name', 'last_name']),
+        ]
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
 
 
 class ArxivEntry(models.Model):
@@ -41,6 +64,14 @@ class ArxivEntry(models.Model):
     def make_slug(self):
         if not self.slug:
             self.slug = slugify(self.title)
+
+    def make_authors(self) -> list[ArxivEntryAuthor]:
+        author_instances = []
+        for author in self.authors:
+            normalized = normalize_author(author["name"], author.get("affiliation"))
+            instance = ArxivEntryAuthor(arxiv_entry=self, **normalized)
+            author_instances.append(instance)
+        return author_instances
 
 
 class ArxivCategory(models.Model):
