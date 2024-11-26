@@ -3,12 +3,16 @@ import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue'
 import { AxiosError } from 'axios'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 
 import { useUserStore } from '@/stores/user'
 import { patchProfile, type ErrorResponse } from '@/services/api'
+import AvatarPanel from '@/components/AvatarPanel.vue'
+
+const isAvatarPanelVisible = ref(false)
 
 const router = useRouter()
 const { t } = useI18n()
@@ -35,6 +39,15 @@ const { handleSubmit, errors, meta, isSubmitting } = useForm({
     url: userStore.user?.url ?? '',
   },
 })
+
+const onAvatarUpdated = (newAvatarUrl: string) => {
+  // 更新 userStore 中的头像 URL
+  if (userStore.user) {
+    userStore.user.avatar = newAvatarUrl // 只更新 avatar 字段
+  }
+  console.log(newAvatarUrl)
+  console.log('新头像已更新:', newAvatarUrl)
+}
 
 const { value: nickname } = useField<string>('nickname')
 const { value: email } = useField<string>('email')
@@ -85,7 +98,11 @@ const onEditProfile = handleSubmit(async values => {
       >
         <div class="my-6 flex items-center justify-center space-x-6">
           <img
-            src="https://avatars.githubusercontent.com/t/11448713?s=116&v=4"
+            :src="
+              userStore.user?.avatar
+                ? `http://localhost:8000${userStore.user.avatar}`
+                : 'https://avatars.githubusercontent.com/t/11448713?s=116&v=4'
+            "
             alt="Avatar"
             class="inline h-24 w-24 rounded-full text-center leading-[6rem]"
           />
@@ -94,7 +111,14 @@ const onEditProfile = handleSubmit(async values => {
           >
             {{ t('userWelcome', { username: userStore.user?.username }) }}
           </div>
-          <Button :label="t('editImage')"></Button>
+          <Button
+            :label="t('editImage')"
+            @click="isAvatarPanelVisible = true"
+          />
+          <AvatarPanel
+            v-model:visible="isAvatarPanelVisible"
+            @update-avatar="onAvatarUpdated"
+          />
         </div>
       </div>
       <div class="flex w-full justify-center space-x-4">

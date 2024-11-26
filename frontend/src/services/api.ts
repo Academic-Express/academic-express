@@ -176,6 +176,8 @@ export const URLS = {
   refreshLogin: '/v1/user/login/refresh',
   register: '/v1/user/register',
   getCurrentUser: '/v1/user/profile',
+  getAvatar: '/v1/user/avatar',
+
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
 
   getArxivEntry: (arxivId: string) => `/v1/pub/arxiv/${arxivId}`,
@@ -254,4 +256,15 @@ export function getFollowFeed() {
 
 export function getSubscriptionFeed() {
   return client.get<SubscriptionFeed[]>(URLS.getSubscriptionFeed)
+}
+
+export function uploadAvatar(file: File) {
+  const formData = new FormData()
+  formData.append('avatar', file)
+
+  return client.post<{ avatar: string }>(URLS.getAvatar, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }
