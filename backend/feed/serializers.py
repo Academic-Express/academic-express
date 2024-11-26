@@ -1,6 +1,5 @@
 from typing import Any
 
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (PolymorphicProxySerializer,
                                    extend_schema_field)
 from rest_framework import serializers
@@ -44,3 +43,17 @@ class FollowFeedSerializer(FeedSerializer):
     关注动态。
     """
     source = FollowSourceSerializer()
+
+
+class SubscriptionSourceSerializer(serializers.Serializer):
+    """
+    订阅来源，目前只支持话题。
+    """
+    topics = serializers.ListField(child=serializers.CharField(), required=False)
+
+
+class SubscriptionFeedSerializer(FeedSerializer):
+    """
+    订阅推荐。
+    """
+    source = SubscriptionSourceSerializer()
