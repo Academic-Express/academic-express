@@ -137,6 +137,40 @@ export interface ScholarSubscriptionRequest {
   scholar_name: string
 }
 
+export enum FeedOrigin {
+  Arxiv = 'arxiv',
+  Github = 'github',
+}
+
+export interface BaseFeed {
+  origin: FeedOrigin
+  timestamp: string
+}
+
+export interface ArxivEntryFeed extends BaseFeed {
+  origin: FeedOrigin.Arxiv
+  entry: ArxivEntry
+}
+
+export interface GithubRepoFeed extends BaseFeed {
+  origin: FeedOrigin.Github
+  repo: GithubRepo
+}
+
+export type Feed = ArxivEntryFeed | GithubRepoFeed
+
+export type FollowFeed = Feed & {
+  source: {
+    scholar_names?: string[]
+  }
+}
+
+export type SubscriptionFeed = Feed & {
+  source: {
+    topics?: string[]
+  }
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -153,6 +187,9 @@ export const URLS = {
   getScholarSubscriptions: '/v1/sub/scholars',
   subscribeScholar: '/v1/sub/scholars',
   unsubscribeScholar: (id: number) => `/v1/sub/scholars/${id}`,
+
+  getFollowFeed: '/v1/feed/follow',
+  getSubscriptionFeed: '/v1/feed/subscription',
 }
 
 export function login(payload: LoginRequest) {
@@ -209,4 +246,12 @@ export function subscribeScholar(payload: ScholarSubscriptionRequest) {
 
 export function unsubscribeScholar(id: number) {
   return client.delete<void>(URLS.unsubscribeScholar(id))
+}
+
+export function getFollowFeed() {
+  return client.get<FollowFeed[]>(URLS.getFollowFeed)
+}
+
+export function getSubscriptionFeed() {
+  return client.get<SubscriptionFeed[]>(URLS.getSubscriptionFeed)
 }
