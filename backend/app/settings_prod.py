@@ -20,5 +20,7 @@ DATABASES = {
     }
 }
 
+MEDIA_URL = '/media/'
+
 FEED_ENGINE_URL = os.environ['FEED_ENGINE_URL']
 FEED_ENGINE_TOKEN = Path(os.environ['FEED_ENGINE_TOKEN_FILE']).read_text().strip()
