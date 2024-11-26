@@ -167,5 +167,13 @@ STATIC_ROOT = BASE_DIR / 'static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Media files
+# https://docs.djangoproject.com/en/5.1/topics/files/
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Feed engine
+
+FEED_ENGINE_URL = 'http://localhost:8001'
+FEED_ENGINE_TOKEN = 'feed-engine-token'

@@ -35,6 +35,8 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       SECRET_KEY_FILE: /run/secrets/secret_key
+      FEED_ENGINE_URL: ${FEED_ENGINE_URL}
+      FEED_ENGINE_TOKEN_FILE: /run/secrets/feed_engine_token
     depends_on:
       mysql:
         condition: service_healthy
@@ -75,6 +77,8 @@ secrets:
     file: ./secrets/db_password
   secret_key:
     file: ./secrets/secret_key
+  feed_engine_token:
+    file: ./secrets/feed_engine_token
 
 volumes:
   db_data:
