@@ -18,7 +18,8 @@ const emit = defineEmits(['update:visible', 'update-avatar'])
 const localVisible = ref(false) // 内部控制对话框显示状态的变量
 const avatar = ref<File | null>(null)
 const avatarUrl = ref<string | null>(null)
-const defaultAvatar = 'https://via.placeholder.com/150' // 默认头像
+const defaultAvatar = 'https://placehold.co/256x256' // 默认头像
+const loading = ref(false) // 上传状态
 
 const toast = useToast() // 用于显示上传提示
 
@@ -56,24 +57,18 @@ const handleCancel = () => {
 
 // 保存操作（上传逻辑）
 const handleSave = async () => {
-  console.log('Avatar File:', avatar.value)
-
   if (!avatar.value) {
-    toast.add({
-      severity: 'warn',
-      summary: t('cancel'),
-      detail: t('请选择文件后再保存'),
-      life: 3000,
-    })
     return
   }
 
   try {
+    loading.value = true
+
     const response = await uploadAvatar(avatar.value)
     toast.add({
       severity: 'success',
-      summary: t('save'),
-      detail: t('头像上传成功'),
+      summary: t('toast.success'),
+      detail: t('toast.successDetail'),
       life: 3000,
     })
 
@@ -85,10 +80,12 @@ const handleSave = async () => {
     console.error('上传失败：', error)
     toast.add({
       severity: 'error',
-      summary: t('保存失败'),
-      detail: t('头像上传失败，请稍后再试'),
+      summary: t('toast.error'),
+      detail: t('toast.unknownError'),
       life: 3000,
     })
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -98,22 +95,22 @@ const handleSave = async () => {
     <Dialog
       v-model:visible="localVisible"
       modal
-      :header="t('editProfile')"
+      :header="t('title')"
       :style="{ width: '25rem' }"
       @hide="emit('update:visible', false)"
     >
       <span class="mb-8 block text-surface-500 dark:text-surface-400">
-        {{ t('updateYourInformation') }}
+        {{ t('description') }}
       </span>
 
       <!-- 头像上传部分 -->
-      <div class="mb-6 flex flex-col items-center">
+      <div class="mb-6 flex flex-col items-center px-8">
         <img
           :src="avatarUrl || defaultAvatar"
           alt="Avatar"
-          class="mb-4 h-24 w-24 rounded-full object-cover"
+          class="mb-6 h-36 w-36 rounded-full object-cover"
         />
-        <InputText type="file" @change="onFileChange" accept="image/*" />
+        <InputText type="file" @change="onFileChange" accept="image/*" fluid />
       </div>
 
       <!-- 按钮部分 -->
@@ -124,27 +121,29 @@ const handleSave = async () => {
           severity="secondary"
           @click="handleCancel"
         ></Button>
-        <Button type="button" :label="t('save')" @click="handleSave"></Button>
+        <Button
+          type="button"
+          :label="t('save')"
+          @click="handleSave"
+          :disabled="!avatar || loading"
+          :loading="loading"
+        ></Button>
       </div>
     </Dialog>
   </div>
 </template>
 
-<style scoped>
-.card {
-  /* 示例样式 */
-  padding: 1rem;
-  background-color: var(--color-card-background, #fff);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
-}
-</style>
-
 <i18n locale="zh-CN">
 {
-  "editProfile": "修改头像",
-  "updateYourInformation": "编辑你的头像。",
+  "title": "修改头像",
+  "description": "编辑你的头像。",
   "cancel": "取消",
-  "save": "保存"
+  "save": "保存",
+  "toast": {
+    "success": "上传成功",
+    "successDetail": "头像已更新",
+    "error": "上传失败",
+    "unknownError": "未知错误",
+  },
 }
 </i18n>

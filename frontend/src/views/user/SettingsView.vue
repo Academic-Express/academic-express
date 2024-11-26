@@ -10,9 +10,9 @@ import { toTypedSchema } from '@vee-validate/zod'
 
 import { useUserStore } from '@/stores/user'
 import { patchProfile, type ErrorResponse } from '@/services/api'
-import AvatarPanel from '@/components/AvatarPanel.vue'
+import AvatarPopup from '@/components/AvatarPopup.vue'
 
-const isAvatarPanelVisible = ref(false)
+const isAvatarPopupVisible = ref(false)
 
 const router = useRouter()
 const { t } = useI18n()
@@ -98,14 +98,11 @@ const onEditProfile = handleSubmit(async values => {
       >
         <div class="my-6 flex items-center justify-center space-x-6">
           <img
-            :src="
-              userStore.user?.avatar
-                ? `http://localhost:8000${userStore.user.avatar}`
-                : 'https://avatars.githubusercontent.com/t/11448713?s=116&v=4'
-            "
+            :src="userStore.user?.avatar"
             alt="Avatar"
-            class="inline h-24 w-24 rounded-full text-center leading-[6rem]"
+            class="inline h-24 w-24 rounded-full bg-surface-200 text-center leading-[6rem] shadow dark:bg-surface-800"
           />
+
           <div
             class="min-w-32 text-left text-3xl font-medium text-surface-900 dark:text-surface-0 sm:min-w-48"
           >
@@ -113,10 +110,11 @@ const onEditProfile = handleSubmit(async values => {
           </div>
           <Button
             :label="t('editImage')"
-            @click="isAvatarPanelVisible = true"
+            icon="pi pi-pencil"
+            @click="isAvatarPopupVisible = true"
           />
-          <AvatarPanel
-            v-model:visible="isAvatarPanelVisible"
+          <AvatarPopup
+            v-model:visible="isAvatarPopupVisible"
             @update-avatar="onAvatarUpdated"
           />
         </div>

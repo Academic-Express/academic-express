@@ -57,13 +57,9 @@ watchEffect(async () => {
       >
         <div class="my-6 flex items-center justify-center space-x-6">
           <img
-            :src="
-              userStore.user?.avatar
-                ? `http://localhost:8000${userStore.user.avatar}`
-                : 'https://avatars.githubusercontent.com/t/11448713?s=116&v=4'
-            "
+            :src="userStore.user?.avatar"
             alt="Avatar"
-            class="inline h-24 w-24 rounded-full text-center leading-[6rem]"
+            class="inline h-24 w-24 rounded-full bg-surface-200 text-center leading-[6rem] shadow dark:bg-surface-800"
           />
 
           <div

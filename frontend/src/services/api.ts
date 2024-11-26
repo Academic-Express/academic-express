@@ -262,7 +262,7 @@ export function uploadAvatar(file: File) {
   const formData = new FormData()
   formData.append('avatar', file)
 
-  return client.post<{ avatar: string }>(URLS.getAvatar, formData, {
+  return client.post<UserDetail>(URLS.getAvatar, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
