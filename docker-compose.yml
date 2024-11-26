@@ -37,6 +37,8 @@ services:
       SECRET_KEY_FILE: /run/secrets/secret_key
       FEED_ENGINE_URL: ${FEED_ENGINE_URL}
       FEED_ENGINE_TOKEN_FILE: /run/secrets/feed_engine_token
+    volumes:
+      - app_media:/app/media
     depends_on:
       mysql:
         condition: service_healthy
@@ -46,6 +48,7 @@ services:
     secrets:
       - db_password
       - secret_key
+      - feed_engine_token
 
   frontend:
     image: academic-express/frontend
@@ -58,6 +61,8 @@ services:
     build:
       context: nginx
       dockerfile: Dockerfile
+    volumes:
+      - app_media:/app/media
     ports:
       - "80:80"
     depends_on:
@@ -82,3 +87,4 @@ secrets:
 
 volumes:
   db_data:
+  app_media:
