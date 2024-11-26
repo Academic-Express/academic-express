@@ -91,7 +91,7 @@ function logout() {
               severity="contrast"
               rounded
             >
-              <Avatar icon="pi pi-user" shape="circle" />
+              <Avatar :image="userStore.user.avatar" shape="circle" />
               <span class="pi pi-chevron-down !text-xs"></span>
             </Button>
 
@@ -101,7 +101,11 @@ function logout() {
                   class="relative flex w-full cursor-pointer items-center overflow-hidden rounded-none p-2 pl-4 transition-colors duration-200 hover:bg-surface-100 dark:hover:bg-surface-800"
                   @click="goToUserProfile"
                 >
-                  <Avatar icon="pi pi-user" class="mr-3" shape="circle" />
+                  <Avatar
+                    :image="userStore.user.avatar"
+                    class="mr-3"
+                    shape="circle"
+                  />
                   <span class="inline-flex flex-col items-start">
                     <span>{{ userStore.user.username }}</span>
                     <span class="text-xs text-muted-color">{{
