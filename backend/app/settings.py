@@ -170,7 +170,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files
 # https://docs.djangoproject.com/en/5.1/topics/files/
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'http://localhost:8000/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Feed engine
