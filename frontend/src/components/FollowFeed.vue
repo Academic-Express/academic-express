@@ -20,7 +20,12 @@ onMounted(async () => {
   <template v-for="(feed, index) in followFeeds" :key="index">
     <span v-if="feed.source.scholar_names?.length">
       <template v-for="(name, id) in feed.source.scholar_names" :key="id">
-        <Tag :value="name" severity="warn"></Tag>
+        <Tag
+          :value="name"
+          severity="warn"
+          icon="pi pi-user"
+          class="shadow"
+        ></Tag>
       </template>
     </span>
     <ArxivItem

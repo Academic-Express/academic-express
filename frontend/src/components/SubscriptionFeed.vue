@@ -24,7 +24,12 @@ onMounted(async () => {
   <template v-for="(feed, index) in subscriptionFeeds" :key="index">
     <span v-if="feed.source.topics?.length">
       <template v-for="(topic, id) in feed.source.topics" :key="id">
-        <Tag :value="topic" severity="contrast"></Tag>
+        <Tag
+          :value="topic"
+          severity="secondary"
+          icon="pi pi-tag"
+          class="shadow"
+        ></Tag>
       </template>
     </span>
     <ArxivItem
