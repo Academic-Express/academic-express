@@ -1,3 +1,5 @@
+from .models import CollectionGroup
+from .serializers import CollectionGroupSerializer
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -73,7 +75,7 @@ def list_or_create_collection(request: Request):
         collections = Collection.objects.filter(user=request.user)
         serializer = CollectionSerializer(collections, many=True)
         return Response(serializer.data)
-    
+
     elif request.method == 'POST':
         serializer = CollectionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -93,9 +95,69 @@ def list_or_create_collection(request: Request):
 def delete_collection(request: Request, collection_id: int):
     """删除收藏"""
     try:
-        collection = Collection.objects.get(pk=collection_id, user=request.user)
+        collection = Collection.objects.get(
+            pk=collection_id, user=request.user)
     except Collection.DoesNotExist:
         raise NotFound('收藏不存在')
-    
+
     collection.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    operation_id='list_or_create_collection_group',
+    request=CollectionGroupSerializer,
+    responses={
+        200: OpenApiResponse(CollectionGroupSerializer(many=True), description='获取收藏分组列表成功'),
+        201: OpenApiResponse(CollectionGroupSerializer, description='创建收藏分组成功'),
+        400: OpenApiResponse(ErrorSerializer, description='请求参数错误'),
+    },
+)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def list_or_create_collection_group(request: Request):
+    """获取收藏分组列表或创建收藏分组"""
+    if request.method == 'GET':
+        groups = CollectionGroup.objects.filter(user=request.user)
+        serializer = CollectionGroupSerializer(groups, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = CollectionGroupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@extend_schema(
+    operation_id='retrieve_update_delete_collection_group',
+    request=CollectionGroupSerializer,
+    responses={
+        200: OpenApiResponse(CollectionGroupSerializer, description='获取或更新收藏分组成功'),
+        204: OpenApiResponse(None, description='删除收藏分组成功'),
+        404: OpenApiResponse(ErrorSerializer, description='收藏分组不存在'),
+    },
+)
+@api_view(['GET', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def retrieve_update_delete_collection_group(request: Request, group_id: int):
+    """获取、更新或删除收藏分组"""
+    try:
+        group = CollectionGroup.objects.get(pk=group_id, user=request.user)
+    except CollectionGroup.DoesNotExist:
+        raise NotFound('收藏分组不存在')
+
+    if request.method == 'GET':
+        serializer = CollectionGroupSerializer(group)
+        return Response(serializer.data)
+
+    elif request.method == 'PATCH':
+        serializer = CollectionGroupSerializer(
+            group, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        group.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

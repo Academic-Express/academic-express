@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ArxivEntry, GithubRepo, Collection
+from .models import ArxivEntry, GithubRepo, Collection, CollectionGroup
 
 
 class ArxivEntrySerializer(serializers.ModelSerializer):
@@ -20,3 +20,11 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ['id', 'user', 'arxiv_entry', 'github_repo', 'created_at']
         read_only_fields = ['user', 'created_at']
+
+
+class CollectionGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CollectionGroup
+        fields = ['id', 'user', 'name',
+                  'collections', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'created_at', 'updated_at']

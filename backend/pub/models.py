@@ -32,7 +32,8 @@ class ArxivEntry(models.Model):
     """
     ArXiv 论文。
     """
-    arxiv_id = models.CharField(max_length=255, primary_key=True, verbose_name='ArXiv ID')
+    arxiv_id = models.CharField(
+        max_length=255, primary_key=True, verbose_name='ArXiv ID')
     title = models.TextField(verbose_name='标题')
     summary = models.TextField(verbose_name='摘要')
     authors = models.JSONField(verbose_name='作者')
@@ -95,7 +96,8 @@ class GithubRepo(models.Model):
     """
     GitHub 仓库。
     """
-    repo_id = models.CharField(max_length=255, primary_key=True, verbose_name='仓库 ID')
+    repo_id = models.CharField(
+        max_length=255, primary_key=True, verbose_name='仓库 ID')
     name = models.CharField(max_length=255, verbose_name='名称')
     full_name = models.CharField(max_length=255, verbose_name='全名')
     description = models.TextField(verbose_name='描述', null=True)
@@ -114,7 +116,8 @@ class GithubRepo(models.Model):
 
     stargazers_count = models.IntegerField(default=0, verbose_name='Star 数量')
     forks_count = models.IntegerField(default=0, verbose_name='Fork 数量')
-    open_issues_count = models.IntegerField(default=0, verbose_name='开放 Issue 数量')
+    open_issues_count = models.IntegerField(
+        default=0, verbose_name='开放 Issue 数量')
     network_count = models.IntegerField(default=0, verbose_name='网络数量')
     subscribers_count = models.IntegerField(default=0, verbose_name='Watch 数量')
 
@@ -167,7 +170,8 @@ class Collection(models.Model):
             models.CheckConstraint(
                 check=(
                     models.Q(arxiv_entry__isnull=False, github_repo__isnull=True) |
-                    models.Q(arxiv_entry__isnull=True, github_repo__isnull=False)
+                    models.Q(arxiv_entry__isnull=True,
+                             github_repo__isnull=False)
                 ),
                 name='exactly_one_resource'
             )
@@ -178,3 +182,26 @@ class Collection(models.Model):
             return f'{self.user.username} - ArXiv: {self.arxiv_entry.title}'
         return f'{self.user.username} - GitHub: {self.github_repo.full_name}'
 
+
+class CollectionGroup(models.Model):
+    """
+    收藏分组。
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='用户'
+    )
+    name = models.CharField(max_length=255, verbose_name='分组名称')
+    collections = models.ManyToManyField(
+        Collection, blank=True, verbose_name='收藏')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '收藏分组'
+        verbose_name_plural = '收藏分组'
+
+    def __str__(self):
+        return f'{self.user.username} - {self.name}'
