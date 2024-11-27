@@ -131,7 +131,7 @@ const mainTab = ref('subscription')
       </Panel>
 
       <Panel
-        :header="t('subscriptionPanel.organizations.header')"
+        :header="t('subscriptionPanel.institutions.header')"
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
@@ -166,7 +166,7 @@ const mainTab = ref('subscription')
     "scholars": {
       "header": "关注学者",
     },
-    "organizations": {
+    "institutions": {
       "header": "关注机构",
     },
   }

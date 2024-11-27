@@ -8,8 +8,10 @@ import {
   unsubscribeTopic,
   type TopicSubscription,
 } from '@/services/api'
+import { useBus } from '@/bus'
 
 const { t } = useI18n()
+const bus = useBus()
 
 const followedTopics = ref<TopicSubscription[]>([])
 const newTopic = ref<string>('')
@@ -34,6 +36,7 @@ async function addTopic(topic: string) {
       topic: topic,
     })
     followedTopics.value.push(response.data)
+    bus.emit('subscriptionUpdated', 'topic')
   } catch (error) {
     console.error(error)
   }
@@ -50,6 +53,7 @@ async function onRemoveTopic(index: number) {
     await unsubscribeTopic(removedTopic.id)
 
     followedTopics.value.splice(index, 1)
+    bus.emit('subscriptionUpdated', 'topic')
   } catch (error) {
     console.error(error)
   }

@@ -7,17 +7,22 @@ import {
   getSubscriptionFeed,
   type SubscriptionFeed,
 } from '@/services/api'
+import { useEvent } from '@/bus'
 
 const subscriptionFeeds = ref<SubscriptionFeed[]>([])
 
-onMounted(async () => {
+async function fetchSubscriptionFeed() {
   try {
     const response = await getSubscriptionFeed()
     subscriptionFeeds.value = response.data
   } catch (error) {
     console.error(error)
   }
-})
+}
+
+onMounted(fetchSubscriptionFeed)
+
+useEvent('subscriptionUpdated', fetchSubscriptionFeed)
 </script>
 
 <template>

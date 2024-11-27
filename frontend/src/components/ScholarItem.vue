@@ -8,8 +8,10 @@ import {
   unsubscribeScholar,
   type ScholarSubscription,
 } from '@/services/api'
+import { useBus } from '@/bus'
 
 const { t } = useI18n()
+const bus = useBus()
 
 const followedScholars = ref<ScholarSubscription[]>([])
 const newScholar = ref<string>('')
@@ -34,6 +36,7 @@ async function addScholar(scholarName: string) {
       scholar_name: scholarName,
     })
     followedScholars.value.push(response.data)
+    bus.emit('subscriptionUpdated', 'scholar')
   } catch (error) {
     console.error(error)
   }
@@ -50,6 +53,7 @@ async function onRemoveScholar(index: number) {
     await unsubscribeScholar(removedScholar.id)
 
     followedScholars.value.splice(index, 1)
+    bus.emit('subscriptionUpdated', 'scholar')
   } catch (error) {
     console.error(error)
   }

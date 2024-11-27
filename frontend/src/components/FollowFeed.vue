@@ -3,15 +3,24 @@ import { onMounted, ref } from 'vue'
 
 import ArxivItem from './ArxivItem.vue'
 import { FeedOrigin, getFollowFeed, type FollowFeed } from '@/services/api'
+import { useEvent } from '@/bus'
 
 const followFeeds = ref<FollowFeed[]>([])
 
-onMounted(async () => {
+async function fetchFollowFeed() {
   try {
     const response = await getFollowFeed()
     followFeeds.value = response.data
   } catch (error) {
     console.error(error)
+  }
+}
+
+onMounted(fetchFollowFeed)
+
+useEvent('subscriptionUpdated', async category => {
+  if (['scholar', 'institution'].includes(category)) {
+    await fetchFollowFeed()
   }
 })
 </script>

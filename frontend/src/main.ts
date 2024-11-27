@@ -13,6 +13,7 @@ import ToastService from 'primevue/toastservice'
 import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
+import bus from './bus'
 
 const app = createApp(App)
 
@@ -31,5 +32,6 @@ app.use(PrimeVue, {
 })
 app.use(ConfirmationService)
 app.use(ToastService)
+app.use(bus)
 
 app.mount('#app')
