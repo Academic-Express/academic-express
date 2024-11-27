@@ -17,6 +17,9 @@ DATABASES = {
         'PASSWORD': Path(os.environ['DB_PASSWORD_FILE']).read_text().strip(),
         'HOST': os.environ['DB_HOST'],
         'PORT': os.environ['DB_PORT'],
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
