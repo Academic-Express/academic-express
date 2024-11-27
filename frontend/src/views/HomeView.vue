@@ -39,10 +39,14 @@ const mainTab = ref('subscription')
         </TabList>
         <TabPanels class="overflow-hidden rounded-lg shadow">
           <TabPanel value="follow">
-            <FollowFeed />
+            <KeepAlive>
+              <FollowFeed v-if="mainTab === 'follow'" />
+            </KeepAlive>
           </TabPanel>
           <TabPanel value="subscription">
-            <SubscriptionFeed />
+            <KeepAlive>
+              <SubscriptionFeed v-if="mainTab === 'subscription'" />
+            </KeepAlive>
           </TabPanel>
           <TabPanel value="hot">
             <p>热点追踪组件</p>
