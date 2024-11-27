@@ -116,7 +116,18 @@ def save_results_to_db(results: list[GithubRepoSchema]):
         entries,
         update_conflicts=True,
         update_fields=GithubRepoSchema.__annotations__.keys() - {PK},
-        unique_fields={PK},
+        # XXX: Workaround for bulk_create unique_fields issue
+        # https://docs.djangoproject.com/en/5.1/ref/models/querysets/#bulk-create
+        unique_fields={PK} if supports_bulk_create_unique_fields() else None
+    )
+
+
+def supports_bulk_create_unique_fields():
+    from django.conf import settings
+
+    return settings.DATABASES["default"]["ENGINE"] in (
+        "django.db.backends.postgresql",
+        "django.db.backends.sqlite3",
     )
 
 
