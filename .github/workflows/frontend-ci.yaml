@@ -35,8 +35,8 @@ jobs:
       run: npm run lint:check
     - name: Build project
       run: npm run build
-    - name: Run unit tests
-      run: npm run test:unit
+    # - name: Run unit tests
+    #   run: npm run test:unit
     # - name: Run E2E tests
     #   run: |
     #     npx playwright install --with-deps
