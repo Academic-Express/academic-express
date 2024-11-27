@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from .settings import *
+from .settings import *  # noqa: F403, F401
 
 DEBUG = False
 
@@ -19,3 +19,8 @@ DATABASES = {
         'PORT': os.environ['DB_PORT'],
     }
 }
+
+MEDIA_URL = '/media/'
+
+FEED_ENGINE_URL = os.environ['FEED_ENGINE_URL']
+FEED_ENGINE_TOKEN = Path(os.environ['FEED_ENGINE_TOKEN_FILE']).read_text().strip()

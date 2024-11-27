@@ -6,3 +6,7 @@
 
 # vscode
 .vscode/
+*.code-workspace
+
+# Misc
+.DS_Store

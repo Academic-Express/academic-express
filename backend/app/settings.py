@@ -33,6 +33,9 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'user.apps.UserConfig',
+    'pub.apps.PubConfig',
+    'sub.apps.SubConfig',
+    'feed.apps.FeedConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -157,8 +160,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Media files
+# https://docs.djangoproject.com/en/5.1/topics/files/
+
+MEDIA_URL = 'http://localhost:8000/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Feed engine
+
+FEED_ENGINE_URL = 'http://localhost:8001'
+FEED_ENGINE_TOKEN = 'feed-engine-token'

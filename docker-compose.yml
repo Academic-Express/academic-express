@@ -22,6 +22,7 @@ services:
       - db_password
 
   app:
+    image: academic-express/backend
     build:
       context: backend
       dockerfile: Dockerfile
@@ -34,6 +35,10 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       SECRET_KEY_FILE: /run/secrets/secret_key
+      FEED_ENGINE_URL: ${FEED_ENGINE_URL}
+      FEED_ENGINE_TOKEN_FILE: /run/secrets/feed_engine_token
+    volumes:
+      - app_media:/app/media
     depends_on:
       mysql:
         condition: service_healthy
@@ -43,15 +48,26 @@ services:
     secrets:
       - db_password
       - secret_key
+      - feed_engine_token
 
-  nginx:
+  frontend:
+    image: academic-express/frontend
     build:
       context: frontend
       dockerfile: Dockerfile
+
+  nginx:
+    image: academic-express/nginx
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    volumes:
+      - app_media:/app/media
     ports:
       - "80:80"
     depends_on:
       - app
+      - frontend
     networks:
       - app_network
 
@@ -66,6 +82,9 @@ secrets:
     file: ./secrets/db_password
   secret_key:
     file: ./secrets/secret_key
+  feed_engine_token:
+    file: ./secrets/feed_engine_token
 
 volumes:
   db_data:
+  app_media:

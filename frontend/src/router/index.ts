@@ -34,9 +34,21 @@ const router = createRouter({
           component: () => import('../views/user/SettingsView.vue'),
         },
         {
-          path: 'user/profile/:userId',
+          path: 'user/profile/:userId(\\d+)',
           name: 'user-profile',
           component: () => import('../views/user/ProfileView.vue'),
+          props: route => ({ userId: Number(route.params.userId) }),
+        },
+        {
+          path: 'pub/arxiv/:arxivId/:slug?',
+          name: 'pub-arxiv',
+          component: () => import('../views/pub/ArxivView.vue'),
+          props: true,
+        },
+        {
+          path: 'pub/github/:owner/:repo',
+          name: 'pub-github',
+          component: () => import('../views/pub/GithubView.vue'),
           props: true,
         },
       ],

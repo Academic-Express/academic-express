@@ -38,7 +38,10 @@
 *::after {
   box-sizing: border-box;
   margin: 0;
-  font-weight: normal;
+}
+
+:root {
+  font-size: 15px;
 }
 
 body {
@@ -47,7 +50,6 @@ body {
   color: var(--text-color);
   background-color: var(--surface-ground);
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
