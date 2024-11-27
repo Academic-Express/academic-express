@@ -12,12 +12,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('--batch-size', type=int, default=256)
+        parser.add_argument('--all', action='store_true', help='上传所有数据')
 
     def handle(self, *args, **options):
-        """
-        将 arXiv 论文数据上传到推送后端。
-        """
-        unsynced_entries = ArxivEntry.objects.filter(synced=False)
+        if options['all']:
+            unsynced_entries = ArxivEntry.objects.all()
+        else:
+            unsynced_entries = ArxivEntry.objects.filter(synced=False)
 
         batch_size = options['batch_size']
 
@@ -29,7 +30,7 @@ class Command(BaseCommand):
             for entry in batch:
                 arxiv_ids.append(entry.arxiv_id)
                 payload.append({
-                    'arxiv_id': entry.arxiv_id,
+                    'entry_id': entry.arxiv_id,
                     'content': generate_index_text(entry),
                 })
 

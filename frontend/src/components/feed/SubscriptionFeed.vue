@@ -8,6 +8,7 @@ import {
   type SubscriptionFeed,
 } from '@/services/api'
 import { useEvent } from '@/bus'
+import GithubItem from './GithubItem.vue'
 
 const subscriptionFeeds = ref<SubscriptionFeed[]>([])
 
@@ -31,7 +32,7 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
       <template v-for="(topic, id) in feed.source.topics" :key="id">
         <Tag
           :value="topic"
-          severity="secondary"
+          severity="info"
           icon="pi pi-tag"
           class="shadow"
         ></Tag>
@@ -40,6 +41,10 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
     <ArxivItem
       v-if="feed.origin === FeedOrigin.Arxiv"
       :arxivEntry="feed.item"
-    ></ArxivItem>
+    />
+    <GithubItem
+      v-else-if="feed.origin === FeedOrigin.Github"
+      :githubRepo="feed.item"
+    />
   </template>
 </template>

@@ -18,7 +18,7 @@ const { t } = useI18n()
 const githubRepository = ref<GithubRepo | null>(null)
 const pageTitle = computed(() => {
   if (githubRepository.value) {
-    return t('_title', { title: githubRepository.value.name })
+    return t('_title', { full_name: githubRepository.value.full_name })
   }
   return t('_fallbackTitle')
 })
@@ -99,7 +99,7 @@ watchEffect(async () => {
 
         <!-- Repository Forks -->
         <Button
-          icon="pi pi-arrow-down-left-and-arrow-up-right-to-center"
+          icon="pi pi-share-alt -rotate-90"
           severity="success"
           variant="text"
           :label="`${githubRepository.forks_count} forks`"
@@ -149,7 +149,7 @@ watchEffect(async () => {
 
 <i18n locale="zh-CN">
 {
-  "_title": "{title} - @:app.name",
+  "_title": "{full_name} - @:app.name",
   "_fallbackTitle": "GitHub - @:app.name",
   "homepage": "主页",
 }
