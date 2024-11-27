@@ -27,7 +27,7 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
 
 <template>
   <template v-for="(feed, index) in subscriptionFeeds" :key="index">
-    <span v-if="feed.source.topics?.length">
+    <div v-if="feed.source.topics?.length" class="space-x-4">
       <template v-for="(topic, id) in feed.source.topics" :key="id">
         <Tag
           :value="topic"
@@ -36,7 +36,7 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
           class="shadow"
         ></Tag>
       </template>
-    </span>
+    </div>
     <ArxivItem
       v-if="feed.origin === FeedOrigin.Arxiv"
       :arxivEntry="feed.item"

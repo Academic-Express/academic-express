@@ -27,7 +27,7 @@ useEvent('subscriptionUpdated', async category => {
 
 <template>
   <template v-for="(feed, index) in followFeeds" :key="index">
-    <span v-if="feed.source.scholar_names?.length">
+    <div v-if="feed.source.scholar_names?.length" class="space-x-4">
       <template v-for="(name, id) in feed.source.scholar_names" :key="id">
         <Tag
           :value="name"
@@ -36,7 +36,7 @@ useEvent('subscriptionUpdated', async category => {
           class="shadow"
         ></Tag>
       </template>
-    </span>
+    </div>
     <ArxivItem
       v-if="feed.origin === FeedOrigin.Arxiv"
       :arxivEntry="feed.item"
