@@ -3,8 +3,9 @@ from datetime import datetime
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
+from django.contrib.auth import get_user_model
 
-from .models import ArxivEntry
+from .models import ArxivEntry, Collection
 
 # Create your tests here.
 
@@ -51,7 +52,8 @@ class PubTests(APITestCase):
             'title': 'Attention Is All You Need',
             'updated': '2023-08-02T00:41:18Z'
         }
-        self.test_arxiv_entry = ArxivEntry.objects.create(**self.test_arxiv_entry_data)
+        self.test_arxiv_entry = ArxivEntry.objects.create(
+            **self.test_arxiv_entry_data)
 
     def test_get_arxiv_entry(self):
         url = reverse('pub:get_arxiv_entry',
@@ -65,3 +67,77 @@ class PubTests(APITestCase):
                 self.assertEqual(expected, actual)
             else:
                 self.assertEqual(response.data[k], v)
+
+
+class CollectionTests(APITestCase):
+    def setUp(self):
+        # 创建测试用户
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            password='testpass123'
+        )
+        # 创建测试论文
+        self.arxiv_entry = ArxivEntry.objects.create(
+            arxiv_id='test123',
+            title='Test Paper',
+            summary='Test Summary',
+            authors=[{'name': 'Test Author'}],
+            published='2024-01-01T00:00:00Z',
+            updated='2024-01-01T00:00:00Z',
+            primary_category='cs.AI',
+            categories=['cs.AI'],
+            link='http://example.com',
+            pdf='http://example.com/pdf'
+        )
+
+        # 认证客户端
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_collection(self):
+        """测试创建收藏"""
+        url = reverse('pub:list_or_create_collection')
+        data = {
+            'arxiv_entry': self.arxiv_entry.arxiv_id
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Collection.objects.count(), 1)
+        self.assertEqual(Collection.objects.first().user, self.user)
+
+    def test_list_collections(self):
+        """测试获取收藏列表"""
+        Collection.objects.create(
+            user=self.user,
+            arxiv_entry=self.arxiv_entry
+        )
+
+        url = reverse('pub:list_or_create_collection')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_delete_collection(self):
+        """测试删除收藏"""
+        collection = Collection.objects.create(
+            user=self.user,
+            arxiv_entry=self.arxiv_entry
+        )
+
+        url = reverse('pub:delete_collection', kwargs={
+                      'collection_id': collection.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Collection.objects.count(), 0)
+
+    def test_delete_nonexistent_collection(self):
+        """测试删除不存在的收藏"""
+        url = reverse('pub:delete_collection', kwargs={'collection_id': 999})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_unauthorized_access(self):
+        """测试未认证访问"""
+        self.client.force_authenticate(user=None)
+        url = reverse('pub:list_or_create_collection')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

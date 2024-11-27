@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.conf import settings
 
 from .utils import normalize_author
 
@@ -129,3 +130,51 @@ class GithubRepo(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class Collection(models.Model):
+    """
+    用户收藏。每个收藏只能关联一个资源（ArXiv 论文或 GitHub 仓库）。
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='用户'
+    )
+    arxiv_entry = models.ForeignKey(
+        ArxivEntry,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='ArXiv 论文'
+    )
+    github_repo = models.ForeignKey(
+        GithubRepo,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='GitHub 仓库'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='创建时间'
+    )
+
+    class Meta:
+        verbose_name = '收藏'
+        verbose_name_plural = '收藏'
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(arxiv_entry__isnull=False, github_repo__isnull=True) |
+                    models.Q(arxiv_entry__isnull=True, github_repo__isnull=False)
+                ),
+                name='exactly_one_resource'
+            )
+        ]
+
+    def __str__(self):
+        if self.arxiv_entry:
+            return f'{self.user.username} - ArXiv: {self.arxiv_entry.title}'
+        return f'{self.user.username} - GitHub: {self.github_repo.full_name}'
+
