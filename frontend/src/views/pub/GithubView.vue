@@ -2,11 +2,16 @@
 import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import { marked } from 'marked'
+import { Marked } from 'marked'
+import { markedHighlight } from 'marked-highlight'
+import hljs from 'highlight.js'
+import DOMPurify from 'dompurify'
 
 import { getGithubRepo, type GithubRepo } from '@/services/api'
+import { isUrlAbsolute } from '@/utils'
 
 import '@/assets/github-markdown.css'
+import 'highlight.js/styles/github.css'
 
 const props = defineProps<{
   owner: string
@@ -18,9 +23,50 @@ const { t } = useI18n()
 const githubRepository = ref<GithubRepo | null>(null)
 const pageTitle = computed(() => {
   if (githubRepository.value) {
-    return t('_title', { title: githubRepository.value.name })
+    return t('_title', { full_name: githubRepository.value.full_name })
   }
   return t('_fallbackTitle')
+})
+
+const marked = new Marked(
+  markedHighlight({
+    emptyLangClass: 'hljs',
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+      return hljs.highlight(code, { language }).value
+    },
+  }),
+)
+
+const renderedReadme = computed(() => {
+  if (!githubRepository.value?.readme) {
+    return ''
+  }
+
+  const html = marked.parse(githubRepository.value.readme) as string
+  const cleanHtml = DOMPurify.sanitize(html)
+
+  // Add base URL to relative links and images
+  const baseUrl = githubRepository.value.html_url
+  const div = document.createElement('div')
+  div.innerHTML = cleanHtml
+
+  for (const a of div.querySelectorAll('a[href]')) {
+    const href = a.getAttribute('href')!
+    if (!isUrlAbsolute(href)) {
+      a.setAttribute('href', new URL(href, baseUrl).toString())
+    }
+  }
+
+  for (const img of div.querySelectorAll('img[src]')) {
+    const src = img.getAttribute('src')!
+    if (!isUrlAbsolute(src)) {
+      img.setAttribute('src', new URL(src, baseUrl).toString())
+    }
+  }
+
+  return div.innerHTML
 })
 
 useHead({ title: pageTitle })
@@ -99,7 +145,7 @@ watchEffect(async () => {
 
         <!-- Repository Forks -->
         <Button
-          icon="pi pi-arrow-down-left-and-arrow-up-right-to-center"
+          icon="pi pi-share-alt -rotate-90"
           severity="success"
           variant="text"
           :label="`${githubRepository.forks_count} forks`"
@@ -123,7 +169,7 @@ watchEffect(async () => {
       <!-- README Section -->
       <div class="mt-8" v-if="githubRepository?.readme">
         <div
-          v-html="marked(githubRepository.readme)"
+          v-html="renderedReadme"
           class="prose markdown-body max-w-full"
         ></div>
       </div>
@@ -149,7 +195,7 @@ watchEffect(async () => {
 
 <i18n locale="zh-CN">
 {
-  "_title": "{title} - @:app.name",
+  "_title": "{full_name} - @:app.name",
   "_fallbackTitle": "GitHub - @:app.name",
   "homepage": "主页",
 }

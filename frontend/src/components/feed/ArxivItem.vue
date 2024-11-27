@@ -42,7 +42,7 @@ const { t } = useI18n()
 
     <div class="flex flex-wrap gap-6 text-xs">
       <!-- Categories -->
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-wrap gap-x-4 gap-y-2">
         <Button
           v-for="category in arxivEntry.categories"
           :key="category"

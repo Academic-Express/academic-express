@@ -109,6 +109,11 @@ class ArxivSubscriptionCandidate(TypedDict):
     topic_scores: dict[str, float]
 
 
+class GithubSubscriptionCandidate(TypedDict):
+    full_name: str
+    topic_scores: dict[str, float]
+
+
 @extend_schema(
     operation_id='get_subscription_feed',
     responses={
@@ -154,14 +159,18 @@ def get_subscription_feed(request: Request):
 
     for topic, search_result in zip(subscribed_topics, search_results):
         for entry in search_result:
-            candidate = arxiv_candidates.setdefault(entry['arxiv_id'], {
-                'arxiv_id': entry['arxiv_id'],
+            candidate = arxiv_candidates.setdefault(entry['entry_id'], {
+                'arxiv_id': entry['entry_id'],
                 'topic_scores': {},
             })
             candidate['topic_scores'][topic] = entry['score']
 
     for candidate in arxiv_candidates.values():
-        arxiv_entry = ArxivEntry.objects.get(arxiv_id=candidate['arxiv_id'])
+        try:
+            arxiv_entry = ArxivEntry.objects.get(arxiv_id=candidate['arxiv_id'])
+        except ArxivEntry.DoesNotExist:
+            continue
+
         score = get_arxiv_subscription_score(candidate, arxiv_entry)
 
         candidates.append({
@@ -169,12 +178,43 @@ def get_subscription_feed(request: Request):
             'item': arxiv_entry,
             'timestamp': arxiv_entry.published,
             'source': {
-                'topics': list(candidate['topic_scores'].keys()),
+                'topics': list_top_topics(candidate['topic_scores']),
             },
             '_score': score,
         })
 
-    # TODO: 从推荐后端中获取推荐的 GitHub 仓库。
+    # 从推荐后端中获取推荐的 GitHub 仓库。
+    response = session.post('/github/search', json=search_payload)
+    response.raise_for_status()
+    search_results = response.json()
+
+    github_candidates: dict[str, GithubSubscriptionCandidate] = {}
+
+    for topic, search_result in zip(subscribed_topics, search_results):
+        for entry in search_result:
+            candidate = github_candidates.setdefault(entry['entry_id'], {
+                'full_name': entry['entry_id'],
+                'topic_scores': {},
+            })
+            candidate['topic_scores'][topic] = entry['score']
+
+    for candidate in github_candidates.values():
+        try:
+            github_repo = GithubRepo.objects.get(full_name=candidate['full_name'])
+        except GithubRepo.DoesNotExist:
+            continue
+
+        score = get_github_subscription_score(candidate, github_repo)
+
+        candidates.append({
+            'origin': 'github',
+            'item': github_repo,
+            'timestamp': github_repo.pushed_at,
+            'source': {
+                'topics': list_top_topics(candidate['topic_scores']),
+            },
+            '_score': score,
+        })
 
     # 按得分排序候选集。
     sorted_candidates = sorted(
@@ -182,6 +222,7 @@ def get_subscription_feed(request: Request):
         key=lambda candidate: candidate['_score'],
         reverse=True,
     )
+    sorted_candidates = sorted_candidates[:50]
 
     return Response(SubscriptionFeedSerializer(sorted_candidates, many=True).data)
 
@@ -201,6 +242,37 @@ def get_arxiv_subscription_score(
     freshness_score = 1 / (1 + elapsed_days)
 
     return 0.5 * overall_topic_score + 0.5 * freshness_score
+
+
+def get_github_subscription_score(
+    candidate: GithubSubscriptionCandidate,
+    github_repo: GithubRepo,
+) -> float:
+    """
+    计算 GitHub 仓库的订阅推荐得分。
+    """
+    # 计算话题相似度得分。
+    sum_topic_scores = sum(candidate['topic_scores'].values())
+    num_topics = len(candidate['topic_scores'])
+    overall_topic_score = sum_topic_scores / (1 + num_topics) ** 0.5
+
+    # 计算时效性得分。
+    created_days = (now() - github_repo.created_at).days
+    pushed_days = (now() - github_repo.pushed_at).days
+    freshness_score = 0.5 / (1 + pushed_days) + 0.5 / (1 + created_days)
+
+    return 0.5 * overall_topic_score + 0.5 * freshness_score
+
+
+def list_top_topics(topic_scores: dict[str, float], top_n: int = 3) -> list[str]:
+    """
+    列出得分最高的话题。
+    """
+    return sorted(
+        topic_scores.keys(),
+        key=lambda topic: topic_scores[topic],
+        reverse=True,
+    )[:top_n]
 
 
 @extend_schema(

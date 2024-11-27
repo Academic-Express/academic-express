@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mt-2">
+  <div class="mt-4">
     <div class="flex gap-4">
       <!-- Avator -->
       <img
@@ -36,7 +36,7 @@ defineProps<{
     </div>
 
     <!-- Topics -->
-    <div class="mb-4 flex flex-wrap gap-4" v-if="githubRepo">
+    <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2" v-if="githubRepo">
       <Button
         v-for="topic in githubRepo.topics"
         :key="topic"
@@ -75,7 +75,7 @@ defineProps<{
       <!-- Forks -->
       <template v-if="githubRepo">
         <span>
-          <i class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+          <i class="pi pi-share-alt -rotate-90"></i>
           {{ githubRepo.forks_count }}
         </span>
       </template>
