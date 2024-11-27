@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
 import type { ArxivEntry } from '@/services/api'
+
+import arxivLogo from '@/assets/arxiv-logo.svg'
 
 defineProps<{
   arxivEntry: ArxivEntry
 }>()
-
-const { t } = useI18n()
 </script>
 
 <template>
@@ -40,7 +38,19 @@ const { t } = useI18n()
       <p class="line-clamp-3">{{ arxivEntry.summary }}</p>
     </div>
 
-    <div class="flex flex-wrap gap-6 text-xs">
+    <div class="flex flex-wrap text-xs">
+      <!-- Links -->
+      <div class="mr-4">
+        <Button
+          :label="arxivEntry.arxiv_id.split('v')[0]"
+          severity="primary"
+          as="a"
+          :href="arxivEntry.link"
+          target="_blank"
+          class="p-button-sm"
+        ></Button>
+      </div>
+
       <!-- Categories -->
       <div class="flex flex-wrap gap-x-4 gap-y-2">
         <Button
@@ -53,36 +63,13 @@ const { t } = useI18n()
         </Button>
       </div>
 
-      <!-- Links -->
-      <div class="flex gap-4">
-        <Button
-          icon="pi pi-external-link"
-          :label="t('viewOriginal')"
-          severity="success"
-          as="a"
-          :href="arxivEntry.link"
-          target="_blank"
-          class="p-button-sm"
-        ></Button>
-        <Button
-          icon="pi pi-download"
-          :label="t('downloadPdf')"
-          severity="info"
-          as="a"
-          :href="arxivEntry.pdf"
-          target="_blank"
-          class="p-button-sm"
-        ></Button>
+      <div class="ml-auto mr-2 flex items-center">
+        <a :href="arxivEntry.link" target="_blank">
+          <img :src="arxivLogo" alt="Arxiv Logo" class="h-5" />
+        </a>
       </div>
     </div>
   </div>
   <!-- Dividing Line -->
   <hr class="my-4" />
 </template>
-
-<i18n locale="zh-CN">
-  {
-    "viewOriginal": "查看原文",
-    "downloadPdf": "下载 PDF",
-  }
-</i18n>

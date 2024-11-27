@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import type { GithubRepo } from '@/services/api'
+import { useThemeStore } from '@/stores/theme'
+
+import githubMark from '@/assets/github-mark.svg'
+import githubMarkWhite from '@/assets/github-mark-white.svg'
 
 defineProps<{
   githubRepo: GithubRepo
 }>()
+
+const themeStore = useThemeStore()
 </script>
 
 <template>
@@ -79,6 +85,16 @@ defineProps<{
           {{ githubRepo.forks_count }}
         </span>
       </template>
+
+      <div class="ml-auto mr-2 flex items-center">
+        <a :href="githubRepo.html_url" target="_blank">
+          <img
+            :src="themeStore.darkMode ? githubMarkWhite : githubMark"
+            alt="Github Logo"
+            class="h-5"
+          />
+        </a>
+      </div>
     </div>
   </div>
   <!-- Dividing Line -->
