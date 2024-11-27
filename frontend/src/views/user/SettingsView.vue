@@ -10,7 +10,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 
 import { useUserStore } from '@/stores/user'
 import { patchProfile, type ErrorResponse } from '@/services/api'
-import AvatarPopup from '@/components/AvatarPopup.vue'
+import AvatarPopup from '@/components/user/AvatarPopup.vue'
 
 const isAvatarPopupVisible = ref(false)
 
