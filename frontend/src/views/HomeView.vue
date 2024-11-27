@@ -4,11 +4,11 @@ import { useI18n, I18nT } from 'vue-i18n'
 
 import { useUserStore } from '@/stores/user'
 
-import FollowFeed from '@/components/FollowFeed.vue'
-import SubscriptionFeed from '@/components/SubscriptionFeed.vue'
-import TopicItem from '@/components/TopicItem.vue'
-import InstitutionItem from '../components/InstitutionItem.vue'
-import ScholarItem from '@/components/ScholarItem.vue'
+import FollowFeed from '@/components/feed/FollowFeed.vue'
+import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
+import TopicPanel from '@/components/subscription/TopicPanel.vue'
+import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
+import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -119,7 +119,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <TopicItem />
+        <TopicPanel />
       </Panel>
 
       <Panel
@@ -127,7 +127,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <ScholarItem />
+        <ScholarPanel />
       </Panel>
 
       <Panel
@@ -135,7 +135,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <InstitutionItem />
+        <InstitutionPanel />
       </Panel>
     </aside>
   </div>
