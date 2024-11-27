@@ -149,12 +149,12 @@ export interface BaseFeed {
 
 export interface ArxivEntryFeed extends BaseFeed {
   origin: FeedOrigin.Arxiv
-  entry: ArxivEntry
+  item: ArxivEntry
 }
 
 export interface GithubRepoFeed extends BaseFeed {
   origin: FeedOrigin.Github
-  repo: GithubRepo
+  item: GithubRepo
 }
 
 export type Feed = ArxivEntryFeed | GithubRepoFeed

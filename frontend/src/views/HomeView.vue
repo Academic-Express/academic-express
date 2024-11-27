@@ -4,6 +4,12 @@ import { useI18n, I18nT } from 'vue-i18n'
 
 import { useUserStore } from '@/stores/user'
 
+import FollowFeed from '@/components/FollowFeed.vue'
+import SubscriptionFeed from '@/components/SubscriptionFeed.vue'
+import TopicItem from '@/components/TopicItem.vue'
+import InstitutionItem from '../components/InstitutionItem.vue'
+import ScholarItem from '@/components/ScholarItem.vue'
+
 const { t } = useI18n()
 const userStore = useUserStore()
 
@@ -20,13 +26,23 @@ const mainTab = ref('subscription')
           <Tab value="follow">{{ t('main.follow') }}</Tab>
           <Tab value="subscription">{{ t('main.subscription') }}</Tab>
           <Tab value="hot">{{ t('main.hot') }}</Tab>
+          <div class="ml-8 content-center">
+            <IconField>
+              <InputIcon>
+                <i class="pi pi-search"></i>
+              </InputIcon>
+              <InputText
+                :placeholder="t('subscriptionPanel.searchBar.input')"
+              />
+            </IconField>
+          </div>
         </TabList>
         <TabPanels class="overflow-hidden rounded-lg shadow">
           <TabPanel value="follow">
-            <p>关注动态组件</p>
+            <FollowFeed />
           </TabPanel>
           <TabPanel value="subscription">
-            <p>订阅推荐组件</p>
+            <SubscriptionFeed />
           </TabPanel>
           <TabPanel value="hot">
             <p>热点追踪组件</p>
@@ -103,7 +119,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <div>订阅话题的内容。</div>
+        <TopicItem />
       </Panel>
 
       <Panel
@@ -111,7 +127,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <div>关注学者的内容。</div>
+        <ScholarItem />
       </Panel>
 
       <Panel
@@ -119,7 +135,7 @@ const mainTab = ref('subscription')
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
-        <div>关注机构的内容。</div>
+        <InstitutionItem />
       </Panel>
     </aside>
   </div>
@@ -141,6 +157,9 @@ const mainTab = ref('subscription')
     "loginTips": "加入@:app.name{''}，探索更多内容",
   },
   "subscriptionPanel": {
+    "searchBar": {
+      "input": "搜索...",
+    },
     "topics": {
       "header": "订阅话题",
     },
