@@ -5,15 +5,17 @@ export type Events = {
   subscriptionUpdated: 'topic' | 'scholar' | 'institutions'
 }
 
+export const BUS = Symbol('bus')
+
 export default {
   install(app: App) {
     const emitter = mitt<Events>()
-    app.provide('bus', emitter)
+    app.provide(BUS, emitter)
   },
 }
 
 export function useBus() {
-  return inject('bus') as Emitter<Events>
+  return inject(BUS) as Emitter<Events>
 }
 
 export function useEvent<Key extends keyof Events>(
