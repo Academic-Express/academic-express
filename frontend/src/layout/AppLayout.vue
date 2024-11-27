@@ -8,9 +8,9 @@ import AppFooter from '@/layout/AppFooter.vue'
     <AppHeader />
 
     <div class="container mx-auto flex flex-1 flex-col p-4">
-      <RouterView v-slot="{ Component }">
+      <RouterView v-slot="{ Component, route }">
         <KeepAlive>
-          <component :is="Component" />
+          <component :is="Component" :key="route.fullPath" />
         </KeepAlive>
       </RouterView>
     </div>

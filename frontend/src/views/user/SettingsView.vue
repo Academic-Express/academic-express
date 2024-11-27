@@ -7,6 +7,7 @@ import { ref } from 'vue'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
+import { useHead } from '@unhead/vue'
 
 import { useUserStore } from '@/stores/user'
 import { patchProfile, type ErrorResponse } from '@/services/api'
@@ -18,6 +19,8 @@ const router = useRouter()
 const { t } = useI18n()
 const userStore = useUserStore()
 const toast = useToast()
+
+useHead({ title: t('_title') })
 
 const validationSchema = toTypedSchema(
   z.object({
@@ -209,6 +212,7 @@ const onEditProfile = handleSubmit(async values => {
 
 <i18n locale="zh-CN">
 {
+  "_title": "编辑资料 - @:app.name",
   "editImage": "修改头像",
   "nickname": "昵称",
   "url": "个人主页",

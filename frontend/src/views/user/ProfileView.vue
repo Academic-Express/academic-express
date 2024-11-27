@@ -7,6 +7,7 @@ import { AxiosError } from 'axios'
 import { useUserStore } from '@/stores/user'
 import { getUserById, type User } from '@/services/api'
 import { compactButtonDt } from '@/dt'
+import { useHead } from '@unhead/vue'
 
 const props = defineProps<{
   userId: number
@@ -21,6 +22,13 @@ const isSelf = computed(() => userStore.user?.id === props.userId)
 const displayUser = computed(() =>
   isSelf.value ? userStore.user : fetchedUser.value,
 )
+
+const title = computed(() =>
+  displayUser.value
+    ? t('_title', { username: displayUser.value.username })
+    : t('_fallbackTitle'),
+)
+useHead({ title })
 
 watchEffect(async () => {
   if (isSelf.value) return
@@ -57,7 +65,7 @@ watchEffect(async () => {
       >
         <div class="my-6 flex items-center justify-center space-x-6">
           <img
-            :src="userStore.user?.avatar"
+            :src="displayUser?.avatar"
             alt="Avatar"
             class="inline h-24 w-24 rounded-full bg-surface-200 text-center leading-[6rem] shadow dark:bg-surface-800"
           />
@@ -200,6 +208,8 @@ watchEffect(async () => {
 
 <i18n locale="zh-CN">
   {
+    "_title": "{username} - @:app.name",
+    "_fallbackTitle": "用户主页 - @:app.name",
     "follow": "关注",
     "directMessage": "私信",
     "editProfile": "编辑资料",

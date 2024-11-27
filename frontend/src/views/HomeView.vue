@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n, I18nT } from 'vue-i18n'
+import { useHead } from '@unhead/vue'
 
 import { useUserStore } from '@/stores/user'
 
@@ -12,6 +13,8 @@ import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
+
+useHead({ title: t('_title') })
 
 const mainTab = ref('subscription')
 </script>
