@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Collection(models.Model):
@@ -10,7 +10,7 @@ class Collection(models.Model):
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     arxiv_entries = models.ManyToManyField('pub.ArxivEntry', through='CollectionArxivEntry')
     github_repos = models.ManyToManyField('pub.GithubRepo', through='CollectionGithubRepo')
 

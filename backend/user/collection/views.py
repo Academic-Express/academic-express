@@ -1,13 +1,15 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from pub.models import ArxivEntry, GithubRepo
-from .models import Collection, CollectionArxivEntry, CollectionGithubRepo, CollectionItem
-from .serializers import CollectionSerializer, CollectionItemSerializer
-from django.db import IntegrityError
 from django.db.models import Q
 from django.http import Http404
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from pub.models import ArxivEntry, GithubRepo
+
+from .models import (Collection, CollectionArxivEntry, CollectionGithubRepo,
+                     CollectionItem)
+from .serializers import CollectionItemSerializer, CollectionSerializer
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

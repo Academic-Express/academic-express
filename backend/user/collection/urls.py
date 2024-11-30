@@ -1,6 +1,7 @@
+from django.urls import include, path
 from rest_framework_nested import routers
-from django.urls import path, include
-from .views import CollectionViewSet, CollectionItemViewSet
+
+from .views import CollectionItemViewSet, CollectionViewSet
 
 router = routers.SimpleRouter()
 router.register(r'', CollectionViewSet, basename='collection')

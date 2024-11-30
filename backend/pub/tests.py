@@ -3,11 +3,11 @@ from datetime import datetime
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.contrib.auth import get_user_model
 
 from .models import ArxivEntry
 
 # Create your tests here.
+
 
 class PubTests(APITestCase):
     client: APIClient

@@ -5,7 +5,8 @@ from drf_spectacular.utils import (PolymorphicProxySerializer,
 from rest_framework import serializers
 
 from pub.serializers import ArxivEntrySerializer, GithubRepoSerializer
-from .models import Collection, CollectionItem
+
+from .models import Collection
 
 
 class CollectionItemSerializer(serializers.Serializer):
