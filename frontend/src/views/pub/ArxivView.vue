@@ -22,6 +22,8 @@ const pageTitle = computed(() => {
   return t('_fallbackTitle')
 })
 
+const collected = ref(false)
+
 useHead({ title: pageTitle })
 
 watchEffect(async () => {
@@ -41,15 +43,28 @@ watchEffect(() => {
     })
   }
 })
+
+async function onCollect() {
+  if (!arxivEntry.value) return
+  collected.value = !collected.value
+}
 </script>
 
 <template>
   <div class="container mx-auto max-w-[960px] p-4">
     <div class="rounded-lg bg-surface-50 p-6 shadow-md dark:bg-surface-950">
       <!-- Title -->
-      <h1 class="mb-4 text-2xl font-bold">
+      <h1 class="mb-4 flex items-center justify-between text-2xl font-bold">
         <span v-if="arxivEntry">{{ arxivEntry.title }}</span>
         <Skeleton v-else height="2rem" />
+
+        <!-- 锁定/解锁按钮（ToggleButton）显示在最右边 -->
+        <Button
+          :icon="collected ? 'pi pi-star-fill' : 'pi pi-star'"
+          class="h-10 w-12"
+          severity="warn"
+          @click="onCollect"
+        />
       </h1>
 
       <!-- Authors -->
