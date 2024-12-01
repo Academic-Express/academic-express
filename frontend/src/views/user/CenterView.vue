@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { reactive, ref } from 'vue'
 
 const { t } = useI18n()
-const selectedItem = ref<string | null>('user')
+const selectedItem = ref<string>('user')
 
 const menuItems = reactive([
   {
@@ -13,6 +13,7 @@ const menuItems = reactive([
       {
         label: t('accountInfo.scholar'),
         icon: 'pi pi-graduation-cap',
+        key: 'scholar',
         command: () => {
           selectedItem.value = 'scholar'
         },
@@ -20,6 +21,7 @@ const menuItems = reactive([
       {
         label: t('accountInfo.user'),
         icon: 'pi pi-user',
+        key: 'user',
         command: () => {
           selectedItem.value = 'user'
         },
@@ -33,22 +35,25 @@ const menuItems = reactive([
     label: t('pubInfo.title'),
     items: [
       {
-        label: t('pubInfo.concerned'),
+        label: t('pubInfo.subscriptions'),
         icon: 'pi pi-bookmark',
+        key: 'subscriptions',
         command: () => {
-          selectedItem.value = 'concerned'
+          selectedItem.value = 'subscriptions'
         },
       },
       {
-        label: t('pubInfo.collected'),
+        label: t('pubInfo.collections'),
         icon: 'pi pi-star',
+        key: 'collections',
         command: () => {
-          selectedItem.value = 'collected'
+          selectedItem.value = 'collections'
         },
       },
       {
         label: t('pubInfo.history'),
         icon: 'pi pi-history',
+        key: 'history',
         command: () => {
           selectedItem.value = 'history'
         },
@@ -62,8 +67,22 @@ useHead({ title: t('_title') })
 
 <template>
   <main>
-    <div class="flex gap-8">
-      <Menu :model="menuItems" class="ml-8 w-32 rounded-xl shadow"> </Menu>
+    <div class="flex items-start gap-8">
+      <Menu :model="menuItems" class="ml-8 w-32 rounded-xl shadow">
+        <template #item="{ item, props }">
+          <a
+            v-ripple
+            class="flex items-center"
+            v-bind="props.action"
+            :class="{
+              'bg-surface-200 dark:bg-surface-700': selectedItem === item.key,
+            }"
+          >
+            <span class="p-menu-item-icon" :class="item.icon" />
+            <span class="p-menu-item-label">{{ item.label }}</span>
+          </a>
+        </template>
+      </Menu>
       <Panel class="mr-8 flex-1 rounded-xl shadow">
         <template v-if="selectedItem === 'scholar'">
           <h2>{{ t('accountInfo.scholar') }}</h2>
@@ -71,11 +90,11 @@ useHead({ title: t('_title') })
         <template v-else-if="selectedItem === 'user'">
           <h2>{{ t('accountInfo.user') }}</h2>
         </template>
-        <template v-else-if="selectedItem === 'concerned'">
-          <h2>{{ t('pubInfo.concerned') }}</h2>
+        <template v-else-if="selectedItem === 'subscriptions'">
+          <h2>{{ t('pubInfo.subscriptions') }}</h2>
         </template>
-        <template v-else-if="selectedItem === 'collected'">
-          <h2>{{ t('pubInfo.collected') }}</h2>
+        <template v-else-if="selectedItem === 'collections'">
+          <h2>{{ t('pubInfo.collections') }}</h2>
         </template>
         <template v-else-if="selectedItem === 'history'">
           <h2>{{ t('pubInfo.history') }}</h2>
@@ -95,8 +114,8 @@ useHead({ title: t('_title') })
   },
   "pubInfo": {
     "title": "学术中心",
-    "concerned": "我的关注",
-    "collected": "我的收藏",
+    "subscriptions": "我的关注",
+    "collections": "我的收藏",
     "history": "历史记录",
   },
 }
