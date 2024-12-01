@@ -30,17 +30,15 @@ watchEffect(async () => {
   try {
     const response = await getArxivEntry(props.arxivId)
     arxivEntry.value = response.data
+
+    if (props.slug !== arxivEntry.value.slug) {
+      router.replace({
+        name: 'pub-arxiv',
+        params: { arxivId: props.arxivId, slug: arxivEntry.value.slug },
+      })
+    }
   } catch (error) {
     console.error(error)
-  }
-})
-
-watchEffect(() => {
-  if (arxivEntry.value && props.slug !== arxivEntry.value.slug) {
-    router.replace({
-      name: 'pub-arxiv',
-      params: { arxivId: props.arxivId, slug: arxivEntry.value.slug },
-    })
   }
 })
 
