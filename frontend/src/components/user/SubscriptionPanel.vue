@@ -27,10 +27,10 @@ const mainTab = ref('topic')
 
 <i18n locale="zh-CN">
 {
-    "subscriptionPanel": {
-        "topic": "领域",
-        "scholar": "学者",
-        "institution": "机构"
-    }
+  "subscriptionPanel": {
+    "topic": "领域",
+    "scholar": "学者",
+    "institution": "机构"
+  }
 }
 </i18n>

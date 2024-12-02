@@ -82,6 +82,7 @@ onMounted(async () => {
       <Button
         :label="t('addButton')"
         icon="pi pi-plus"
+        :disabled="newTopic.length === 0"
         @click="onAddTopic"
       ></Button>
     </div>
@@ -125,10 +126,10 @@ onMounted(async () => {
 
 <i18n locale="zh-CN">
 {
-    "followedTopics": "已订阅的话题",
-    "addButton": "添加",
-    "recommended": "推荐订阅话题",
-    "placeholder": "暂无订阅话题",
-    "inputBox": "请输入话题"
+  "followedTopics": "已订阅的话题",
+  "addButton": "添加",
+  "recommended": "推荐订阅话题",
+  "placeholder": "暂无订阅话题",
+  "inputBox": "请输入话题"
 }
 </i18n>

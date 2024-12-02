@@ -85,7 +85,9 @@ useHead({ title: t('_title') })
           </a>
         </template>
       </Menu>
-      <Panel class="mr-8 flex-1 rounded-xl shadow">
+      <div
+        class="mr-8 flex-1 rounded-xl bg-surface-0 p-6 shadow dark:bg-surface-900"
+      >
         <template v-if="selectedItem === 'scholar'">
           <h2>{{ t('accountInfo.scholar') }}</h2>
         </template>
@@ -101,7 +103,7 @@ useHead({ title: t('_title') })
         <template v-else-if="selectedItem === 'history'">
           <h2>{{ t('pubInfo.history') }}</h2>
         </template>
-      </Panel>
+      </div>
     </div>
   </main>
 </template>
