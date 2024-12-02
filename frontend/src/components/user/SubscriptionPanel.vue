@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TopicSubscription from './subscriptions/TopicSubscription.vue'
+import ScholarSubscription from './subscriptions/ScholarSubscription.vue'
 
 const { t } = useI18n()
 const mainTab = ref('topic')
@@ -19,6 +20,11 @@ const mainTab = ref('topic')
       <TabPanel value="topic">
         <KeepAlive>
           <TopicSubscription v-if="mainTab === 'topic'" />
+        </KeepAlive>
+      </TabPanel>
+      <TabPanel value="scholar">
+        <KeepAlive>
+          <ScholarSubscription v-if="mainTab === 'scholar'" />
         </KeepAlive>
       </TabPanel>
     </TabPanels>
