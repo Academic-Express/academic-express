@@ -3,6 +3,8 @@ import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { reactive, ref } from 'vue'
 
+import SubscriptionPanel from '@/components/user/SubscriptionPanel.vue'
+
 const { t } = useI18n()
 const selectedItem = ref<string>('user')
 
@@ -78,12 +80,14 @@ useHead({ title: t('_title') })
               'bg-surface-200 dark:bg-surface-700': selectedItem === item.key,
             }"
           >
-            <span class="p-menu-item-icon" :class="item.icon" />
+            <span class="p-menu-item-icon" :class="item.icon"></span>
             <span class="p-menu-item-label">{{ item.label }}</span>
           </a>
         </template>
       </Menu>
-      <Panel class="mr-8 flex-1 rounded-xl shadow">
+      <div
+        class="mr-8 flex-1 rounded-xl bg-surface-0 p-6 shadow dark:bg-surface-900"
+      >
         <template v-if="selectedItem === 'scholar'">
           <h2>{{ t('accountInfo.scholar') }}</h2>
         </template>
@@ -91,7 +95,7 @@ useHead({ title: t('_title') })
           <h2>{{ t('accountInfo.user') }}</h2>
         </template>
         <template v-else-if="selectedItem === 'subscriptions'">
-          <h2>{{ t('pubInfo.subscriptions') }}</h2>
+          <SubscriptionPanel />
         </template>
         <template v-else-if="selectedItem === 'collections'">
           <h2>{{ t('pubInfo.collections') }}</h2>
@@ -99,7 +103,7 @@ useHead({ title: t('_title') })
         <template v-else-if="selectedItem === 'history'">
           <h2>{{ t('pubInfo.history') }}</h2>
         </template>
-      </Panel>
+      </div>
     </div>
   </main>
 </template>
