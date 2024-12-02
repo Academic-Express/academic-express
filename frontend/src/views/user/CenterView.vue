@@ -3,6 +3,8 @@ import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { reactive, ref } from 'vue'
 
+import SubscriptionPanel from '@/components/user/SubscriptionPanel.vue'
+
 const { t } = useI18n()
 const selectedItem = ref<string>('user')
 
@@ -78,7 +80,7 @@ useHead({ title: t('_title') })
               'bg-surface-200 dark:bg-surface-700': selectedItem === item.key,
             }"
           >
-            <span class="p-menu-item-icon" :class="item.icon" />
+            <span class="p-menu-item-icon" :class="item.icon"></span>
             <span class="p-menu-item-label">{{ item.label }}</span>
           </a>
         </template>
@@ -91,7 +93,7 @@ useHead({ title: t('_title') })
           <h2>{{ t('accountInfo.user') }}</h2>
         </template>
         <template v-else-if="selectedItem === 'subscriptions'">
-          <h2>{{ t('pubInfo.subscriptions') }}</h2>
+          <SubscriptionPanel />
         </template>
         <template v-else-if="selectedItem === 'collections'">
           <h2>{{ t('pubInfo.collections') }}</h2>
