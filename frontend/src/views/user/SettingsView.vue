@@ -30,6 +30,7 @@ const validationSchema = toTypedSchema(
       message: t('validation.phone.invalid'),
     }),
     url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
+    intro: z.string().or(z.literal('')),
   }),
 )
 
@@ -40,6 +41,7 @@ const { handleSubmit, errors, meta, isSubmitting } = useForm({
     email: userStore.user?.email ?? '',
     phone: userStore.user?.phone ?? '',
     url: userStore.user?.url ?? '',
+    intro: userStore.user?.intro ?? '',
   },
 })
 
@@ -49,13 +51,13 @@ const onAvatarUpdated = (newAvatarUrl: string) => {
     userStore.user.avatar = newAvatarUrl // 只更新 avatar 字段
   }
   console.log(newAvatarUrl)
-  console.log('新头像已更新:', newAvatarUrl)
 }
 
 const { value: nickname } = useField<string>('nickname')
 const { value: email } = useField<string>('email')
 const { value: phone } = useField<string>('phone')
 const { value: url } = useField<string>('url')
+const { value: intro } = useField<string>('intro')
 
 const onEditProfile = handleSubmit(async values => {
   try {
@@ -115,7 +117,7 @@ const onEditProfile = handleSubmit(async values => {
             :label="t('editImage')"
             icon="pi pi-pencil"
             @click="isAvatarPopupVisible = true"
-          />
+          ></Button>
           <AvatarPopup
             v-model:visible="isAvatarPopupVisible"
             @update-avatar="onAvatarUpdated"
@@ -195,11 +197,21 @@ const onEditProfile = handleSubmit(async values => {
         >
           <div class="flex flex-wrap gap-4">
             <div class="flex w-full flex-col gap-2">
-              <label for="address">{{ t('description') }}</label>
-              <Textarea id="address" rows="4" fluid auto-resize></Textarea>
+              <label for="intro">{{ t('intro') }}</label>
+              <Textarea
+                v-model="intro"
+                id="intro"
+                rows="4"
+                fluid
+                auto-resize
+              ></Textarea>
             </div>
             <div class="flex w-full justify-center">
-              <Button :label="t('profileEdit')"></Button>
+              <Button
+                :label="t('profileEdit')"
+                :disabled="!meta.valid || isSubmitting"
+                @click="onEditProfile"
+              ></Button>
             </div>
           </div>
         </div>
@@ -218,7 +230,7 @@ const onEditProfile = handleSubmit(async values => {
   "url": "个人主页",
   "email": "邮箱",
   "phone": "电话",
-  "description": "个人简介",
+  "intro": "个人简介",
   "profileEdit": "确认修改",
   "userWelcome": "{username}, 您好",
   "toast": {
