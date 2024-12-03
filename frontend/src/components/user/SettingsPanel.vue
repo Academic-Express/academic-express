@@ -2,7 +2,6 @@
 import { useI18n, I18nT } from 'vue-i18n'
 import { useToast } from 'primevue'
 import { AxiosError } from 'axios'
-import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
@@ -14,7 +13,6 @@ import AvatarPopup from '@/components/user/AvatarPopup.vue'
 
 const isAvatarPopupVisible = ref(false)
 
-const router = useRouter()
 const { t } = useI18n()
 const userStore = useUserStore()
 const toast = useToast()
@@ -66,11 +64,6 @@ const onEditProfile = handleSubmit(async values => {
       severity: 'success',
       summary: t('toast.success'),
       life: 5000,
-    })
-
-    router.push({
-      name: 'user-profile',
-      params: { userId: userStore.user?.id },
     })
   } catch (error) {
     let detail = t('toast.unknownError')
