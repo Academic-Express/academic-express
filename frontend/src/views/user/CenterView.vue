@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { reactive, ref } from 'vue'
 
 import SubscriptionPanel from '@/components/user/SubscriptionPanel.vue'
+import SettingsPanel from '@/components/user/SettingsPanel.vue'
 
 const { t } = useI18n()
 const selectedItem = ref<string>('user')
@@ -92,7 +93,7 @@ useHead({ title: t('_title') })
           <h2>{{ t('accountInfo.scholar') }}</h2>
         </template>
         <template v-else-if="selectedItem === 'user'">
-          <h2>{{ t('accountInfo.user') }}</h2>
+          <SettingsPanel />
         </template>
         <template v-else-if="selectedItem === 'subscriptions'">
           <SubscriptionPanel />
