@@ -8,7 +8,11 @@ import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 
 import { useUserStore } from '@/stores/user'
-import { patchProfile, type ErrorResponse } from '@/services/api'
+import {
+  patchProfile,
+  changePassword,
+  type ErrorResponse,
+} from '@/services/api'
 import AvatarPopup from '@/components/user/AvatarPopup.vue'
 
 const isAvatarPopupVisible = ref(false)
@@ -17,6 +21,15 @@ const { t } = useI18n()
 const userStore = useUserStore()
 const toast = useToast()
 
+const onAvatarUpdated = (newAvatarUrl: string) => {
+  // 更新 userStore 中的头像 URL
+  if (userStore.user) {
+    userStore.user.avatar = newAvatarUrl // 只更新 avatar 字段
+  }
+  console.log(newAvatarUrl)
+}
+
+/* 编辑个人资料逻辑 */
 const validationSchema = toTypedSchema(
   z.object({
     nickname: z.string().max(20, t('validation.nickname.max')),
@@ -39,14 +52,6 @@ const { handleSubmit, errors, meta, isSubmitting } = useForm({
     intro: userStore.user?.intro ?? '',
   },
 })
-
-const onAvatarUpdated = (newAvatarUrl: string) => {
-  // 更新 userStore 中的头像 URL
-  if (userStore.user) {
-    userStore.user.avatar = newAvatarUrl // 只更新 avatar 字段
-  }
-  console.log(newAvatarUrl)
-}
 
 const { value: nickname } = useField<string>('nickname')
 const { value: email } = useField<string>('email')
@@ -80,6 +85,66 @@ const onEditProfile = handleSubmit(async values => {
     })
   }
 })
+
+/* 修改密码逻辑 */
+const passwordSchema = toTypedSchema(
+  z
+    .object({
+      oldPassword: z.string().min(1, t('validation.oldPassword.min')),
+      newPassword: z.string().min(6, t('validation.newPassword.min')),
+      confirmPassword: z.string().min(1, t('validation.confirmPassword.min')),
+    })
+    .refine(data => data.newPassword === data.confirmPassword, {
+      message: t('validation.confirmPassword.mismatch'),
+      path: ['confirmPassword'],
+    }),
+)
+
+const {
+  handleSubmit: handlePasswordSubmit,
+  errors: passwordErrors,
+  meta: passwordMeta,
+  isSubmitting: isPasswordSubmitting,
+} = useForm({
+  validationSchema: passwordSchema,
+  initialValues: {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  },
+})
+
+const { value: oldPassword } = useField<string>('oldPassword')
+const { value: newPassword } = useField<string>('newPassword')
+const { value: confirmPassword } = useField<string>('confirmPassword')
+
+const onChangePassword = handlePasswordSubmit(async values => {
+  try {
+    await changePassword({
+      old_password: values.oldPassword,
+      new_password: values.newPassword,
+    })
+
+    toast.add({
+      severity: 'success',
+      summary: t('toast.success'),
+      life: 5000,
+    })
+  } catch (error) {
+    let detail = t('toast.unknownError')
+    if (error instanceof AxiosError && error.response?.data) {
+      const data = error.response.data as ErrorResponse
+      detail = data.detail ?? detail
+    }
+    console.error('Failed to change password:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('toast.error'),
+      detail: detail,
+      life: 5000,
+    })
+  }
+})
 </script>
 
 <template>
@@ -87,6 +152,7 @@ const onEditProfile = handleSubmit(async values => {
     <main
       class="flex max-w-[960px] flex-1 flex-col items-center justify-center"
     >
+      <!-- 头像 -->
       <div class="mb-4 w-full p-10 sm:px-20" style="border-radius: 20px">
         <div class="flex items-center justify-center space-x-6">
           <img
@@ -111,6 +177,8 @@ const onEditProfile = handleSubmit(async values => {
           />
         </div>
       </div>
+
+      <!-- 编辑个人信息 -->
       <div class="flex w-full justify-center space-x-4">
         <div class="w-1/2 px-8 py-2">
           <div class="flex flex-col gap-4">
@@ -181,13 +249,15 @@ const onEditProfile = handleSubmit(async values => {
               <div class="flex w-full justify-center">
                 <Button
                   :label="t('profileEdit')"
-                  :disabled="!meta.valid || isSubmitting"
+                  :disabled="!meta.dirty || !meta.valid || isSubmitting"
                   @click="onEditProfile"
                 ></Button>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- 修改密码 -->
         <div class="w-1/2 px-8 py-2">
           <div class="flex flex-col gap-4">
             <p class="text-xl font-bold">{{ t('editPassword') }}</p>
@@ -205,40 +275,73 @@ const onEditProfile = handleSubmit(async values => {
               </div>
               <Password
                 inputId="oldPassword"
+                v-model="oldPassword"
                 fluid
-                :promptLabel="t('password.prompt')"
-                :weakLabel="t('password.weak')"
-                :mediumLabel="t('password.medium')"
-                :strongLabel="t('password.strong')"
+                :feedback="false"
               />
+              <Message
+                v-if="passwordErrors.oldPassword"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ passwordErrors.oldPassword }}</span>
+              </Message>
             </div>
+
             <div class="flex flex-col gap-2">
               <label for="newPassword">{{ t('password.newPassword') }}</label>
               <Password
                 inputId="newPassword"
+                v-model="newPassword"
                 fluid
                 :promptLabel="t('password.prompt')"
                 :weakLabel="t('password.weak')"
                 :mediumLabel="t('password.medium')"
                 :strongLabel="t('password.strong')"
               />
+              <Message
+                v-if="passwordErrors.newPassword"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{ passwordErrors.newPassword }}</span>
+              </Message>
             </div>
+
             <div class="flex flex-col gap-2">
               <label for="confirmPassword">{{
                 t('password.conformPassword')
               }}</label>
               <Password
                 inputId="confirmPassword"
+                v-model="confirmPassword"
                 fluid
-                :promptLabel="t('password.prompt')"
-                :weakLabel="t('password.weak')"
-                :mediumLabel="t('password.medium')"
-                :strongLabel="t('password.strong')"
+                :feedback="false"
               />
+              <Message
+                v-if="passwordErrors.confirmPassword"
+                severity="error"
+                size="small"
+                variant="simple"
+                class="mx-2"
+              >
+                <span class="text-thin">{{
+                  passwordErrors.confirmPassword
+                }}</span>
+              </Message>
             </div>
+
             <div class="flex flex-col gap-2">
               <div class="flex w-full justify-center">
-                <Button :label="t('password.conformButton')"></Button>
+                <Button
+                  :label="t('password.conformButton')"
+                  :disabled="!passwordMeta.valid || isPasswordSubmitting"
+                  @click="onChangePassword"
+                ></Button>
               </div>
             </div>
           </div>
@@ -279,6 +382,16 @@ const onEditProfile = handleSubmit(async values => {
     },
     "url": {
       "invalid": "URL 格式不正确",
+    },
+    "oldPassword": {
+      "min": "原密码不能为空",
+    },
+    "newPassword": {
+      "min": "新密码长度不能小于 6",
+    },
+    "confirmPassword": {
+      "min": "请再次输入新密码",
+      "mismatch": "两次输入的密码不一致",
     },
   },
   "password": {
