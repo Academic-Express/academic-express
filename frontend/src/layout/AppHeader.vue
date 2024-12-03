@@ -31,11 +31,6 @@ const userMenuItems = reactive([
     command: () => router.push({ name: 'user-center' }),
   },
   {
-    label: t('userSettings'),
-    icon: 'pi pi-cog',
-    command: () => router.push({ name: 'user-settings' }),
-  },
-  {
     label: t('logout'),
     icon: 'pi pi-sign-out',
     command: logout,

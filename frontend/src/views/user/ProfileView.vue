@@ -90,19 +90,10 @@ watchEffect(async () => {
           <div class="flex flex-col items-center justify-center gap-4">
             <template v-if="isSelf">
               <Button
-                :label="t('editProfile')"
-                icon="pi pi-pencil"
-                :dt="compactButtonDt"
-                as="router-link"
-                to="/user/settings"
-              ></Button>
-              <Button
                 :label="t('userCenter')"
                 icon="pi pi-user"
-                :dt="compactButtonDt"
                 as="router-link"
                 to="/user/center"
-                severity="secondary"
               ></Button>
             </template>
 
