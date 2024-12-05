@@ -10,14 +10,11 @@ class ArxivEntryAuthor(models.Model):
     """
     ArXiv 论文作者。
     """
-    arxiv_entry = models.ForeignKey(
-        'ArxivEntry', on_delete=models.CASCADE, verbose_name='ArXiv 论文')
+    arxiv_entry = models.ForeignKey('ArxivEntry', on_delete=models.CASCADE, verbose_name='ArXiv 论文')
     first_name = models.CharField(max_length=255, verbose_name='名')
-    middle_name = models.CharField(
-        max_length=255, verbose_name='中间名', null=True)
+    middle_name = models.CharField(max_length=255, verbose_name='中间名', null=True)
     last_name = models.CharField(max_length=255, verbose_name='姓')
-    affiliation = models.CharField(
-        max_length=255, verbose_name='机构', null=True)
+    affiliation = models.CharField(max_length=255, verbose_name='机构', null=True)
 
     class Meta:
         verbose_name = 'ArXiv 论文作者'
@@ -72,8 +69,7 @@ class ArxivEntry(models.Model):
     def make_authors(self) -> list[ArxivEntryAuthor]:
         author_instances = []
         for author in self.authors:
-            normalized = normalize_author(
-                author["name"], author.get("affiliation"))
+            normalized = normalize_author(author["name"], author.get("affiliation"))
             instance = ArxivEntryAuthor(arxiv_entry=self, **normalized)
             author_instances.append(instance)
         return author_instances
@@ -83,8 +79,7 @@ class ArxivCategory(models.Model):
     """
     ArXiv 分类。
     """
-    category_id = models.CharField(
-        max_length=255, primary_key=True, verbose_name='分类 ID')
+    category_id = models.CharField(max_length=255, primary_key=True, verbose_name='分类 ID')
     name = models.CharField(max_length=255, verbose_name='名称')
     description = models.TextField(verbose_name='描述')
 
