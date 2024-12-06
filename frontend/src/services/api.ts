@@ -51,10 +51,16 @@ export interface UserDetail extends User {
 }
 
 export interface PatchProfileRequest {
-  nickname: string
-  url: string
-  email: string
-  phone: string
+  nickname?: string
+  url?: string
+  email?: string
+  phone?: string
+  intro?: string
+}
+
+export interface ChangePasswordRequest {
+  old_password: string
+  new_password: string
 }
 
 export interface ArxivEntry {
@@ -177,6 +183,7 @@ export const URLS = {
   register: '/v1/user/register',
   getCurrentUser: '/v1/user/profile',
   getAvatar: '/v1/user/avatar',
+  changePassword: '/v1/user/change-password',
 
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
 
@@ -216,6 +223,10 @@ export function getUserById(userId: number) {
 
 export function patchProfile(payload: PatchProfileRequest) {
   return client.patch<UserDetail>(URLS.getCurrentUser, payload)
+}
+
+export function changePassword(payload: ChangePasswordRequest) {
+  return client.post<void>(URLS.changePassword, payload)
 }
 
 export function getArxivEntry(arxivId: string) {

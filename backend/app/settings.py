@@ -13,9 +13,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+env = environ.FileAwareEnv()
+environ.Env.read_env(env_file=BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -170,10 +175,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files
 # https://docs.djangoproject.com/en/5.1/topics/files/
 
-MEDIA_URL = 'http://localhost:8000/media/'
+MEDIA_URL = env('MEDIA_URL', default='http://localhost:8000/media/')
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Feed engine
 
-FEED_ENGINE_URL = 'http://localhost:8001'
-FEED_ENGINE_TOKEN = 'feed-engine-token'
+FEED_ENGINE_URL = env('FEED_ENGINE_URL', default='http://localhost:8001')
+FEED_ENGINE_TOKEN = env('FEED_ENGINE_TOKEN', default='feed-engine-token')
