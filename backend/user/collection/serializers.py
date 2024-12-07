@@ -72,3 +72,9 @@ class CollectionGroupSerializer(serializers.ModelSerializer):
 
     def get_items_count(self, obj):
         return obj.collections.count()
+
+
+class CollectionGroupManageItemsSerializer(serializers.Serializer):
+    """管理收藏分组的序列化器"""
+    action = serializers.ChoiceField(choices=['add', 'remove'])
+    collection_ids = serializers.ListField(child=serializers.IntegerField())

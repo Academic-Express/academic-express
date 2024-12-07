@@ -1,9 +1,12 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+
+from utils.exceptions import ErrorSerializer
 
 from .models import Collection, CollectionGroup, GroupCollection
-from .serializers import CollectionGroupSerializer, CollectionSerializer
+from .serializers import CollectionGroupSerializer, CollectionSerializer, CollectionGroupManageItemsSerializer
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
@@ -40,23 +43,29 @@ class CollectionGroupViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @extend_schema(
+        operation_id='collection_group_manage_items',
+        request=CollectionGroupManageItemsSerializer,
+        responses={
+            200: OpenApiResponse(CollectionGroupSerializer, description='管理收藏分组成功'),
+            400: OpenApiResponse(ErrorSerializer, description='请求数据有误'),
+        },
+    )
     @action(detail=True, methods=['post'])
     def manage_items(self, request, pk=None):
+        """
+        添加或移除收藏分组的收藏项。
+
+        - 添加收藏项：action='add'，collection_ids 为要添加的收藏项 ID 列表。
+        - 移除收藏项：action='remove'，collection_ids 为要移除的收藏项 ID 列表。
+        """
         group = self.get_object()
-        action = request.data.get('action')
-        collection_ids = request.data.get('collection_ids', [])
 
-        if not isinstance(collection_ids, list):
-            return Response(
-                {'error': 'collection_ids must be a list'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        request_serializer = CollectionGroupManageItemsSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        if action not in ['add', 'remove']:
-            return Response(
-                {'error': 'Invalid action. Must be either "add" or "remove"'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        action = request_serializer.validated_data['action']
+        collection_ids = request_serializer.validated_data['collection_ids']
 
         collections = Collection.objects.filter(
             id__in=collection_ids,
