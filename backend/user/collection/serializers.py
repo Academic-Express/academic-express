@@ -4,9 +4,10 @@ from drf_spectacular.utils import (PolymorphicProxySerializer,
                                    extend_schema_field)
 from rest_framework import serializers
 
+from pub.models import ArxivEntry, GithubRepo
 from pub.serializers import ArxivEntrySerializer, GithubRepoSerializer
 
-from .models import Collection
+from .models import Collection, CollectionGroup
 
 
 class CollectionItemSerializer(serializers.Serializer):
@@ -34,37 +35,46 @@ class CollectionItemSerializer(serializers.Serializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
-    """
-    收藏夹
-    """
-    items = serializers.SerializerMethodField()
+    """收藏项序列化器"""
+    item = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
+        fields = ['id', 'item_type', 'item_id', 'created_at', 'item']
+        read_only_fields = ['id', 'created_at']
+
+    def get_item(self, obj):
+        if obj.item_type == 'arxiv':
+            try:
+                entry = ArxivEntry.objects.get(arxiv_id=obj.item_id)
+                return ArxivEntrySerializer(entry).data
+            except ArxivEntry.DoesNotExist:
+                return None
+        elif obj.item_type == 'github':
+            try:
+                repo = GithubRepo.objects.get(repo_id=obj.item_id)
+                return GithubRepoSerializer(repo).data
+            except GithubRepo.DoesNotExist:
+                return None
+        return None
+
+
+class CollectionGroupSerializer(serializers.ModelSerializer):
+    """收藏分组序列化器"""
+    items = CollectionSerializer(source='collections', many=True, read_only=True)
+    items_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CollectionGroup
         fields = ['id', 'name', 'description', 'is_public',
-                  'created_at', 'updated_at', 'items']
+                  'created_at', 'updated_at', 'items', 'items_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_items(self, obj):
-        items = []
-        # 获取 ArXiv 论文收藏
-        arxiv_items = obj.collectionarxiventry_set.all()
-        for item in arxiv_items:
-            items.append({
-                'type': 'arxiv',
-                'item': ArxivEntrySerializer(item.entry).data,
-                'created_at': item.collection_time
-            })
+    def get_items_count(self, obj):
+        return obj.collections.count()
 
-        # 获取 GitHub 仓库收藏
-        github_items = obj.collectiongithubrepo_set.all()
-        for item in github_items:
-            items.append({
-                'type': 'github',
-                'item': GithubRepoSerializer(item.repo).data,
-                'created_at': item.collection_time
-            })
 
-        # 按收藏时间排序
-        items.sort(key=lambda x: x['created_at'], reverse=True)
-        return items
+class CollectionGroupManageItemsSerializer(serializers.Serializer):
+    """管理收藏分组的序列化器"""
+    action = serializers.ChoiceField(choices=['add', 'remove'])
+    collection_ids = serializers.ListField(child=serializers.IntegerField())

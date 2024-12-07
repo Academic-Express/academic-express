@@ -1,17 +1,11 @@
-from django.urls import include, path
-from rest_framework_nested import routers
+from rest_framework.routers import DefaultRouter
 
-from .views import CollectionItemViewSet, CollectionViewSet
+from .views import CollectionGroupViewSet, CollectionViewSet
 
-router = routers.SimpleRouter()
+app_name = 'collection'
+
+router = DefaultRouter()
+router.register(r'groups', CollectionGroupViewSet, basename='collectiongroup')
 router.register(r'', CollectionViewSet, basename='collection')
 
-collection_router = routers.NestedSimpleRouter(
-    router, r'', lookup='collection')
-collection_router.register(
-    r'items', CollectionItemViewSet, basename='collection-items')
-
-urlpatterns = [
-    path('', include(router.urls)),
-    path('', include(collection_router.urls)),
-]
+urlpatterns = router.urls
