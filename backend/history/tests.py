@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from pub.models import ArxivEntry, GithubRepo
+
 from .models import History
 
 User = get_user_model()

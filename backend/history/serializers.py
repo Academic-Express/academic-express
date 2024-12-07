@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from pub.serializers import ArxivEntrySerializer, GithubRepoSerializer
+
 from .models import History
 
 
@@ -22,19 +24,19 @@ class HistorySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         content_type = self.context.get('content_type')
         entry = self.context.get('entry')
-        
+
         if not content_type or not entry:
             raise serializers.ValidationError(
                 "content_type and entry are required")
 
         history_data = {}
-        
+
         match content_type:
             case 'arxiv':
                 history_data['arxiv_entry'] = entry
             case 'github':
                 history_data['github_repo'] = entry
-        
+
         # 检查是否存在相同的记录
         existing = History.objects.filter(user=validated_data['user'], **history_data).first()
 
@@ -46,4 +48,3 @@ class HistorySerializer(serializers.ModelSerializer):
         # 如果不存在，创建新记录
         validated_data.update(history_data)
         return super().create(validated_data)
-    

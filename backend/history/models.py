@@ -15,14 +15,14 @@ class History(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     viewed_at = models.DateTimeField(auto_now=True)
-    
+
     # 外键关联
-    arxiv_entry = models.ForeignKey('pub.ArxivEntry', 
-                                   on_delete=models.SET_NULL,
-                                   null=True, blank=True)
+    arxiv_entry = models.ForeignKey('pub.ArxivEntry',
+                                    on_delete=models.SET_NULL,
+                                    null=True, blank=True)
     github_repo = models.ForeignKey('pub.GithubRepo',
-                                   on_delete=models.SET_NULL,
-                                   null=True, blank=True)
+                                    on_delete=models.SET_NULL,
+                                    null=True, blank=True)
 
     class Meta:
         ordering = ['-viewed_at']
