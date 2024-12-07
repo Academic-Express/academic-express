@@ -1,12 +1,13 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from utils.exceptions import ErrorSerializer
 
 from .models import Collection, CollectionGroup, GroupCollection
-from .serializers import CollectionGroupSerializer, CollectionSerializer, CollectionGroupManageItemsSerializer
+from .serializers import (CollectionGroupManageItemsSerializer,
+                          CollectionGroupSerializer, CollectionSerializer)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
