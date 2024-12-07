@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from history.utils import record_history
 from utils.exceptions import ErrorSerializer
 
 from .models import ArxivEntry, GithubRepo
@@ -30,6 +31,9 @@ def get_arxiv_entry(request: Request, arxiv_id: str):
     except ArxivEntry.DoesNotExist:
         raise NotFound('ArXiv 论文不存在。')
 
+    if request.user.is_authenticated:
+        record_history(request.user, 'arxiv', entry)
+
     serializer = ArxivEntrySerializer(entry)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -51,6 +55,9 @@ def get_github_repo(request: Request, owner: str, repo: str):
         repo = GithubRepo.objects.get(full_name=f'{owner}/{repo}')
     except GithubRepo.DoesNotExist:
         raise NotFound('Github 仓库不存在。')
+
+    if request.user.is_authenticated:
+        record_history(request.user, 'github', repo)
 
     serializer = GithubRepoSerializer(repo)
     return Response(serializer.data, status=status.HTTP_200_OK)
