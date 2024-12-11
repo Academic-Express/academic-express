@@ -1,3 +1,4 @@
+from django.db.models import F
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -34,6 +35,10 @@ def get_arxiv_entry(request: Request, arxiv_id: str):
     if request.user.is_authenticated:
         record_history(request.user, 'arxiv', entry)
 
+    entry.view_count = F('view_count') + 1
+    entry.save(update_fields=['view_count'])
+    entry.refresh_from_db()
+
     serializer = ArxivEntrySerializer(entry)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -47,17 +52,21 @@ def get_arxiv_entry(request: Request, arxiv_id: str):
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_github_repo(request: Request, owner: str, repo: str):
+def get_github_repo(request: Request, owner: str, repo_name: str):
     """
     获取 Github 仓库。
     """
     try:
-        repo = GithubRepo.objects.get(full_name=f'{owner}/{repo}')
+        repo = GithubRepo.objects.get(full_name=f'{owner}/{repo_name}')
     except GithubRepo.DoesNotExist:
         raise NotFound('Github 仓库不存在。')
 
     if request.user.is_authenticated:
         record_history(request.user, 'github', repo)
+
+    repo.view_count = F('view_count') + 1
+    repo.save(update_fields=['view_count'])
+    repo.refresh_from_db()
 
     serializer = GithubRepoSerializer(repo)
     return Response(serializer.data, status=status.HTTP_200_OK)
