@@ -227,6 +227,24 @@ export interface CollectionGroupManageItemRequest {
 
 export type PatchCollectionGroupRequest = Partial<CreateCollectionGroupRequest>
 
+export interface BaseHistory {
+  id: number
+  content_type: FeedOrigin
+  viewed_at: string
+}
+
+export interface ArxivHistory extends BaseHistory {
+  content_type: FeedOrigin.Arxiv
+  entry_data: ArxivEntry
+}
+
+export interface GithubHistory extends BaseHistory {
+  content_type: FeedOrigin.Github
+  entry_data: GithubRepo
+}
+
+export type History = ArxivHistory | GithubHistory
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -256,6 +274,9 @@ export const URLS = {
   collectionGroup: (groupId: number) => `/v1/collections/groups/${groupId}`,
   collectionGroupManageItems: (groupId: number) =>
     `/v1/collections/groups/${groupId}/manage_items`,
+
+  history: '/v1/history',
+  historyItem: (id: number) => `/v1/history/${id}/`,
 }
 
 export function login(payload: LoginRequest) {
@@ -377,4 +398,16 @@ export function manageCollectionGroupItems(
   payload: CollectionGroupManageItemRequest,
 ) {
   return client.post<void>(URLS.collectionGroupManageItems(groupId), payload)
+}
+
+export function getHistory() {
+  return client.get<History[]>(URLS.history)
+}
+
+export function getHistoryItem(id: number) {
+  return client.get<History>(URLS.historyItem(id))
+}
+
+export function removeHistoryItem(id: number) {
+  return client.delete<void>(URLS.historyItem(id))
 }

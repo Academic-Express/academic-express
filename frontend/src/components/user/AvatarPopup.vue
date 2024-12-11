@@ -1,5 +1,5 @@
 <script setup lang="ts" name="AvatarPanel">
-import { defineProps, defineEmits, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { uploadAvatar } from '@/services/api' // 引入上传函数
 import { useToast } from 'primevue/usetoast' // 引入 Toast 消息组件
