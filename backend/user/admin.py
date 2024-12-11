@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+from .collection.models import Collection, CollectionGroup, GroupCollection
 from .models import User
-from .collection.models import CollectionGroup, Collection, GroupCollection
 
 # Register your models here.
 admin.site.register(User, UserAdmin)
