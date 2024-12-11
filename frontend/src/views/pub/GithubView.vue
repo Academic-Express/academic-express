@@ -52,18 +52,27 @@ const renderedReadme = computed(() => {
   const div = document.createElement('div')
   div.innerHTML = cleanHtml
 
+  const convertUrl = (url: string, type: string) => {
+    if (isUrlAbsolute(url) || url.startsWith('#')) {
+      return url
+    }
+    if (url.startsWith('/')) {
+      url = url.slice(1)
+    }
+    return `${baseUrl}/${type}/main/${url}`
+  }
+
   for (const a of div.querySelectorAll('a[href]')) {
     const href = a.getAttribute('href')!
-    if (!isUrlAbsolute(href)) {
-      a.setAttribute('href', new URL(href, baseUrl).toString())
-    }
+    a.setAttribute('href', convertUrl(href, 'blob'))
+    a.setAttribute('target', '_blank')
+    a.setAttribute('rel', 'noopener noreferrer')
   }
 
   for (const img of div.querySelectorAll('img[src]')) {
     const src = img.getAttribute('src')!
-    if (!isUrlAbsolute(src)) {
-      img.setAttribute('src', new URL(src, baseUrl).toString())
-    }
+    img.setAttribute('src', convertUrl(src, 'raw'))
+    img.setAttribute('loading', 'lazy')
   }
 
   return div.innerHTML
