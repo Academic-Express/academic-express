@@ -27,7 +27,7 @@ useEvent('subscriptionUpdated', async category => {
 
 <template>
   <template v-for="(feed, index) in followFeeds" :key="index">
-    <div v-if="feed.source.scholar_names?.length" class="space-x-4">
+    <div v-if="feed.source.scholar_names?.length" class="mb-4 space-x-4">
       <template v-for="(name, id) in feed.source.scholar_names" :key="id">
         <Tag
           :value="name"
@@ -41,5 +41,6 @@ useEvent('subscriptionUpdated', async category => {
       v-if="feed.origin === FeedOrigin.Arxiv"
       :arxivEntry="feed.item"
     ></ArxivItem>
+    <hr class="my-4" />
   </template>
 </template>
