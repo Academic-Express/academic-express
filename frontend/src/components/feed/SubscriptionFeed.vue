@@ -28,7 +28,7 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
 
 <template>
   <template v-for="(feed, index) in subscriptionFeeds" :key="index">
-    <div v-if="feed.source.topics?.length" class="space-x-4">
+    <div v-if="feed.source.topics?.length" class="mb-4 space-x-4">
       <template v-for="(topic, id) in feed.source.topics" :key="id">
         <Tag
           :value="topic"
@@ -46,5 +46,6 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
       v-else-if="feed.origin === FeedOrigin.Github"
       :githubRepo="feed.item"
     />
+    <hr class="my-4" />
   </template>
 </template>

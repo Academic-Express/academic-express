@@ -83,7 +83,7 @@ watchEffect(async () => {
 
 <template>
   <div class="container mx-auto max-w-[960px] p-4">
-    <div class="rounded-lg bg-surface-50 p-6 shadow-md dark:bg-surface-950">
+    <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950">
       <!-- Repository Title -->
       <div class="mb-4 flex items-center">
         <img

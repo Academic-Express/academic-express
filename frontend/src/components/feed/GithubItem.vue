@@ -13,7 +13,7 @@ const themeStore = useThemeStore()
 </script>
 
 <template>
-  <div class="mt-4">
+  <div>
     <div class="flex gap-4">
       <!-- Avator -->
       <img
@@ -97,6 +97,4 @@ const themeStore = useThemeStore()
       </div>
     </div>
   </div>
-  <!-- Dividing Line -->
-  <hr class="my-4" />
 </template>
