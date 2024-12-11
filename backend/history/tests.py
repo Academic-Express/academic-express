@@ -70,7 +70,7 @@ class HistoryAPITest(APITestCase):
         owner = self.github_repo.full_name.split('/')[0]
         repo = self.github_repo.name
         url = reverse('pub:get_github_repo', kwargs={
-                      'owner': owner, 'repo': repo})
+                      'owner': owner, 'repo_name': repo})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
