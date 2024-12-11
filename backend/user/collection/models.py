@@ -13,6 +13,8 @@ class Collection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = '收藏项目'
+        verbose_name_plural = '收藏项目'
         db_table = 'collection_item'
         unique_together = ('user', 'item_type', 'item_id')
 
@@ -29,6 +31,8 @@ class CollectionGroup(models.Model):
     collections = models.ManyToManyField(Collection, through='GroupCollection')
 
     class Meta:
+        verbose_name = '收藏分组'
+        verbose_name_plural = '收藏分组'
         db_table = 'collection_group'
         unique_together = ('user', 'name')
 
@@ -40,5 +44,7 @@ class GroupCollection(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = '收藏分组项目'
+        verbose_name_plural = '收藏分组项目'
         db_table = 'collection_group_item'
         unique_together = ('group', 'collection')

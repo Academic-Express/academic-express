@@ -25,8 +25,9 @@ class History(models.Model):
                                     null=True, blank=True)
 
     class Meta:
+        verbose_name = '历史记录'
+        verbose_name_plural = '历史记录'
         ordering = ['-viewed_at']
-        verbose_name_plural = 'histories'
 
     @property
     def content_type(self):
