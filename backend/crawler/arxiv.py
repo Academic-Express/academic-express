@@ -1,7 +1,9 @@
 import itertools
 import json
 import multiprocessing
+import sys
 import xml.etree.ElementTree as ET
+from typing import Optional
 
 from tqdm import tqdm
 
@@ -27,11 +29,23 @@ def fetch_arxiv_metadata(arxiv_ids: list[str]) -> list[ArxivEntrySchema]:
     }
     entries = root.findall("atom:entry", ns)
 
-    results = [parse_entry(entry, ns) for entry in entries]
+    results: list[ArxivEntrySchema] = []
+    for entry in entries:
+        try:
+            result = parse_entry(entry, ns)
+            if result is not None:
+                results.append(result)
+        except Exception as e:
+            print(f"Failed to parse entry: {e}", file=sys.stderr)
+
     return results
 
 
-def parse_entry(entry: ET.Element, ns: dict) -> ArxivEntrySchema:
+def parse_entry(entry: ET.Element, ns: dict) -> Optional[ArxivEntrySchema]:
+    # Skip empty entries.
+    if entry.find("atom:id", ns) is None:
+        return None
+
     id = entry.find("atom:id", ns).text.split("/")[-1]
     title = entry.find("atom:title", ns).text.strip()
     summary = entry.find("atom:summary", ns).text.strip()
