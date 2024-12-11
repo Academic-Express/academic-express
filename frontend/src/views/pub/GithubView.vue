@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import DOMPurify from 'dompurify'
+import debounce from 'lodash/debounce'
+import { useToast } from 'primevue/usetoast'
 
-import { getGithubRepo, type GithubRepo } from '@/services/api'
+import {
+  getGithubRepo,
+  type GithubRepo,
+  addCollection,
+  removeCollection,
+  getCollections,
+  FeedOrigin,
+} from '@/services/api'
+
 import { isUrlAbsolute } from '@/utils'
 
 import '@/assets/github-markdown.css'
@@ -27,6 +37,14 @@ const pageTitle = computed(() => {
   }
   return t('_fallbackTitle')
 })
+
+const collected = ref(false) // 标识论文是否已收藏
+const toast = useToast()
+
+async function onCollect() {
+  if (!githubRepository.value) return
+  collected.value = !collected.value // 切换收藏状态
+}
 
 const marked = new Marked(
   markedHighlight({
@@ -80,10 +98,66 @@ const renderedReadme = computed(() => {
 
 useHead({ title: pageTitle })
 
+watch(
+  collected,
+  debounce(async newValue => {
+    if (!githubRepository.value) return
+
+    try {
+      if (newValue) {
+        // 🎉 收藏操作
+        console.log('📢 发送的请求数据:', {
+          type: FeedOrigin.Github, // GitHub 版本
+          id: githubRepository.value.repo_id,
+        })
+        await addCollection({
+          type: FeedOrigin.Github, // ✅ 这部分与 Arxiv 不同，item_type 需要是 GitHub
+          id: githubRepository.value.repo_id, // ✅ 这里是 repo_id 不是 arxiv_id
+        })
+        toast.add({
+          severity: 'success', // 成功提示
+          summary: '收藏成功',
+          detail: '您已成功收藏该项目',
+          life: 3000, // 提示持续 3 秒
+        })
+        console.log('收藏成功')
+      } else {
+        // 🎉 取消收藏操作
+        const collectionResponse = await getCollections()
+        const collection = collectionResponse.data.find(
+          col =>
+            col.item_id === githubRepository.value?.repo_id &&
+            col.item_type === 'github', // ✅ 确认 item_type 是 'github'
+        )
+        if (collection) {
+          await removeCollection(collection.id)
+          toast.add({
+            severity: 'warn', // 取消提示
+            summary: '取消收藏成功',
+            detail: '您已取消收藏该项目',
+            life: 3000, // 提示持续 3 秒
+          })
+          console.log('取消收藏成功')
+        } else {
+          console.warn('未找到对应的收藏项，无法取消收藏')
+        }
+      }
+    } catch (error) {
+      console.error('收藏操作失败', error)
+    }
+  }, 500), // 防抖 500ms
+)
+
 watchEffect(async () => {
   try {
     const response = await getGithubRepo(props.owner, props.repo)
     githubRepository.value = response.data
+    const collectionResponse = await getCollections()
+    collected.value = collectionResponse.data.some(
+      col =>
+        col.item_id === githubRepository.value?.repo_id &&
+        col.item_type === 'github',
+    )
   } catch (error) {
     console.error(error)
   }
@@ -113,7 +187,10 @@ watchEffect(async () => {
           </a>
           <Skeleton v-else height="2rem" />
         </h1>
-        <div class="ml-auto" v-if="githubRepository?.homepage">
+        <div
+          class="ml-auto flex items-center gap-4"
+          v-if="githubRepository?.homepage"
+        >
           <Button
             :label="t('homepage')"
             icon="pi pi-external-link"
@@ -123,6 +200,13 @@ watchEffect(async () => {
             :href="githubRepository.homepage"
             target="_blank"
           ></Button>
+          <!-- 锁定/解锁按钮（ToggleButton）显示在最右边 -->
+          <Button
+            :icon="collected ? 'pi pi-star-fill' : 'pi pi-star'"
+            class="h-10 w-12"
+            severity="warn"
+            @click="onCollect"
+          />
         </div>
       </div>
 
