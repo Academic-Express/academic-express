@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onActivated } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -42,14 +42,17 @@ const timelineItems = computed(() => {
 
 const { t } = useI18n()
 
-onMounted(async () => {
+const fetchHistory = async () => {
   try {
     const response = await getHistory()
     historyItems.value = response.data
   } catch (error) {
     console.error(error)
   }
-})
+}
+
+onMounted(fetchHistory)
+onActivated(fetchHistory)
 
 const deleteHistoryItem = async (id: number) => {
   try {
