@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
+import { useToast } from 'primevue/usetoast'
+import debounce from 'lodash/debounce'
 
-import { getArxivEntry, type ArxivEntry } from '@/services/api'
+import {
+  getArxivEntry,
+  type ArxivEntry,
+  addCollection,
+  removeCollection,
+  getCollections,
+  FeedOrigin,
+} from '@/services/api'
 
 const props = defineProps<{
   arxivId: string
@@ -23,8 +32,59 @@ const pageTitle = computed(() => {
 })
 
 const collected = ref(false)
+const toast = useToast()
 
 useHead({ title: pageTitle })
+
+watch(
+  collected,
+  debounce(async (newValue: boolean) => {
+    if (!arxivEntry.value) return
+
+    try {
+      if (newValue) {
+        // 🎉 当 collected 变为 true，调用 addCollection
+        console.log('📢 发送的请求数据:', {
+          type: FeedOrigin.Arxiv,
+          id: arxivEntry.value?.arxiv_id,
+        })
+        await addCollection({
+          item_type: FeedOrigin.Arxiv,
+          item_id: arxivEntry.value.arxiv_id,
+        })
+        toast.add({
+          severity: 'success', // 成功提示
+          summary: '收藏成功',
+          detail: '您已成功收藏该项目',
+          life: 3000, // 提示持续 3 秒
+        })
+        console.log('收藏成功')
+      } else {
+        // 🎉 当 collected 变为 false，调用 removeCollection
+        const collectionResponse = await getCollections()
+        const collection = collectionResponse.data.find(
+          col =>
+            col.item_id === arxivEntry.value?.arxiv_id &&
+            col.item_type === 'arxiv',
+        )
+        if (collection) {
+          await removeCollection(collection.id)
+          toast.add({
+            severity: 'warn', // 取消提示
+            summary: '取消收藏成功',
+            detail: '您已取消收藏该项目',
+            life: 3000, // 提示持续 3 秒
+          })
+          console.log('取消收藏成功')
+        } else {
+          console.warn('未找到对应的收藏项，无法取消收藏')
+        }
+      }
+    } catch (error) {
+      console.error('收藏操作失败', error)
+    }
+  }, 500), // ✅ 500ms 的防抖
+)
 
 watchEffect(async () => {
   try {
@@ -37,6 +97,12 @@ watchEffect(async () => {
         params: { arxivId: props.arxivId, slug: arxivEntry.value.slug },
       })
     }
+    // 获取用户的收藏列表
+    const collectionResponse = await getCollections()
+    collected.value = collectionResponse.data.some(
+      col =>
+        col.item_id === arxivEntry.value?.arxiv_id && col.item_type === 'arxiv',
+    )
   } catch (error) {
     console.error(error)
   }

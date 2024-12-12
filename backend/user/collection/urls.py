@@ -4,7 +4,7 @@ from .views import CollectionGroupViewSet, CollectionViewSet
 
 app_name = 'collection'
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register(r'groups', CollectionGroupViewSet, basename='collectiongroup')
 router.register(r'', CollectionViewSet, basename='collection')
 

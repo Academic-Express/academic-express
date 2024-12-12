@@ -18,15 +18,11 @@ class CollectionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Collection.objects.filter(user=self.request.user)
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: CollectionSerializer):
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        data = {
-            'item_type': request.data.get('type'),
-            'item_id': request.data.get('id'),
-        }
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

@@ -268,7 +268,7 @@ export const URLS = {
   getFollowFeed: '/v1/feed/follow',
   getSubscriptionFeed: '/v1/feed/subscription',
 
-  collections: '/v1/collections',
+  collections: '/v1/collections/',
   collection: (id: number) => `/v1/collections/${id}`,
   collectionGroups: '/v1/collections/groups',
   collectionGroup: (groupId: number) => `/v1/collections/groups/${groupId}`,

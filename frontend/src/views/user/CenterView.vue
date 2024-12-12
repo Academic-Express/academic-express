@@ -5,6 +5,7 @@ import { reactive, ref } from 'vue'
 
 import SubscriptionPanel from '@/components/user/SubscriptionPanel.vue'
 import SettingsPanel from '@/components/user/SettingsPanel.vue'
+import CollectionPanel from '@/components/user/CollectionPanel.vue'
 import HistoryPanel from '@/components/user/HistoryPanel.vue'
 
 const { t } = useI18n()
@@ -100,7 +101,7 @@ useHead({ title: t('_title') })
           <SubscriptionPanel />
         </template>
         <template v-else-if="selectedItem === 'collections'">
-          <h2>{{ t('pubInfo.collections') }}</h2>
+          <CollectionPanel />
         </template>
         <template v-else-if="selectedItem === 'history'">
           <HistoryPanel />
