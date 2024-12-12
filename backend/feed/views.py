@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import TypedDict, Union
 
-from django.utils.timezone import now
+from django.utils.timezone import now, timedelta
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -15,7 +14,8 @@ from sub.models import ScholarSubscription, TopicSubscription
 from utils.exceptions import ErrorSerializer
 from utils.feed_engine import session
 
-from .serializers import FollowFeedSerializer, SubscriptionFeedSerializer
+from .serializers import (FollowFeedSerializer, HotFeedSerializer,
+                          SubscriptionFeedSerializer)
 
 
 class FollowSource(TypedDict):
@@ -275,11 +275,19 @@ def list_top_topics(topic_scores: dict[str, float], top_n: int = 3) -> list[str]
     )[:top_n]
 
 
+class HotCandidate(TypedDict):
+    origin: str
+    item: Union[ArxivEntry, GithubRepo]
+    timestamp: datetime
+
+    _score: float
+
+
 @extend_schema(
     operation_id='get_hot_feed',
     responses={
         200: OpenApiResponse(
-            NotImplemented,
+            HotFeedSerializer(many=True),
             description='获取热点追踪成功',
         ),
     },
@@ -290,4 +298,85 @@ def get_hot_feed(request: Request):
     """
     获取热点追踪。
     """
-    return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+    # 获取最近 30 天的 arXiv 论文和 GitHub 仓库。
+    one_week_ago = now() - timedelta(days=30)
+    arxiv_entries = ArxivEntry.objects.filter(published__gte=one_week_ago, view_count__gt=0)
+    github_repos = GithubRepo.objects.filter(pushed_at__gte=one_week_ago, view_count__gt=0)
+
+    # 计算热点追踪得分。
+    arxiv_candidates: list[HotCandidate] = []
+    for entry in arxiv_entries:
+        score = get_arxiv_hot_score(entry)
+        arxiv_candidates.append({
+            'origin': 'arxiv',
+            'item': entry,
+            'timestamp': entry.published,
+            '_score': score,
+        })
+
+    github_candidates: list[HotCandidate] = []
+    for repo in github_repos:
+        score = get_github_hot_score(repo)
+        github_candidates.append({
+            'origin': 'github',
+            'item': repo,
+            'timestamp': repo.pushed_at,
+            '_score': score,
+        })
+
+    # 分别标准化两个集合的得分。
+    normalize_hot_scores(arxiv_candidates)
+    normalize_hot_scores(github_candidates)
+
+    # 按得分排序候选集。
+    candidates = arxiv_candidates + github_candidates
+    candidates.sort(key=lambda candidate: candidate['_score'], reverse=True)
+
+    # 选取得分最高的 50 个候选。
+    candidates = candidates[:50]
+
+    return Response(HotFeedSerializer(candidates, many=True).data)
+
+
+def get_arxiv_hot_score(arxiv_entry: ArxivEntry) -> float:
+    """
+    计算 arXiv 论文的热点追踪得分。
+    """
+    # 计算浏览次数得分。
+    view_count = arxiv_entry.view_count
+
+    # 计算时效性得分。
+    elapsed_days = (now() - arxiv_entry.published).days
+    freshness_score = 1 / (1 + elapsed_days) ** 0.4
+
+    return view_count * freshness_score
+
+
+def get_github_hot_score(github_repo: GithubRepo) -> float:
+    """
+    计算 GitHub 仓库的热点追踪得分。
+    """
+    # 计算浏览次数得分。
+    view_count = github_repo.view_count
+
+    # 计算时效性得分。
+    created_days = (now() - github_repo.created_at).days
+    pushed_days = (now() - github_repo.pushed_at).days
+    freshness_score = 0.5 / (1 + pushed_days) ** 0.5 + 0.5 / (1 + created_days) ** 0.3
+
+    return view_count * freshness_score
+
+
+def normalize_hot_scores(candidates: list[HotCandidate]) -> None:
+    """
+    标准化热点追踪得分。
+    """
+    if not candidates:
+        return
+
+    scores = [candidate['_score'] for candidate in candidates]
+    mean_score = sum(scores) / len(scores)
+    std_score = (sum((score - mean_score) ** 2 for score in scores) / len(scores)) ** 0.5 + 1e-6
+
+    for candidate in candidates:
+        candidate['_score'] = (candidate['_score'] - mean_score) / std_score

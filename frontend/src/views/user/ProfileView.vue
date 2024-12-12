@@ -90,19 +90,10 @@ watchEffect(async () => {
           <div class="flex flex-col items-center justify-center gap-4">
             <template v-if="isSelf">
               <Button
-                :label="t('editProfile')"
-                icon="pi pi-pencil"
-                :dt="compactButtonDt"
-                as="router-link"
-                to="/user/settings"
-              ></Button>
-              <Button
                 :label="t('userCenter')"
                 icon="pi pi-user"
-                :dt="compactButtonDt"
                 as="router-link"
                 to="/user/center"
-                severity="secondary"
               ></Button>
             </template>
 
@@ -188,7 +179,12 @@ watchEffect(async () => {
             <div class="flex w-full flex-col gap-2">
               <span class="font-bold">{{ t('description') }}</span>
               <div v-if="displayUser">
-                <p v-if="displayUser.intro">{{ displayUser.intro }}</p>
+                <p
+                  v-if="displayUser.intro"
+                  class="whitespace-pre-wrap break-words"
+                >
+                  {{ displayUser.intro }}
+                </p>
                 <p v-else class="text-muted-color">{{ t('noIntro') }}</p>
               </div>
               <div class="space-y-2" v-else>

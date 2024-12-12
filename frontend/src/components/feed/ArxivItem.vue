@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mt-4">
+  <div>
     <!-- Title -->
     <div class="mb-3 line-clamp-1 text-xl font-bold">
       <RouterLink
@@ -70,6 +70,4 @@ defineProps<{
       </div>
     </div>
   </div>
-  <!-- Dividing Line -->
-  <hr class="my-4" />
 </template>

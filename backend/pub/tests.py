@@ -51,7 +51,8 @@ class PubTests(APITestCase):
             'title': 'Attention Is All You Need',
             'updated': '2023-08-02T00:41:18Z'
         }
-        self.test_arxiv_entry = ArxivEntry.objects.create(**self.test_arxiv_entry_data)
+        self.test_arxiv_entry = ArxivEntry.objects.create(
+            **self.test_arxiv_entry_data)
 
     def test_get_arxiv_entry(self):
         url = reverse('pub:get_arxiv_entry',

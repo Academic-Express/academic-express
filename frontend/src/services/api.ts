@@ -51,10 +51,16 @@ export interface UserDetail extends User {
 }
 
 export interface PatchProfileRequest {
-  nickname: string
-  url: string
-  email: string
-  phone: string
+  nickname?: string
+  url?: string
+  email?: string
+  phone?: string
+  intro?: string
+}
+
+export interface ChangePasswordRequest {
+  old_password: string
+  new_password: string
 }
 
 export interface ArxivEntry {
@@ -171,12 +177,83 @@ export type SubscriptionFeed = Feed & {
   }
 }
 
+export type HotFeed = Feed & {}
+
+export interface BaseCollection {
+  id: number
+  item_type: FeedOrigin
+  /** arxiv_id or String(repo_id) */
+  item_id: string
+  created_at: string
+}
+
+export interface ArxivCollection extends BaseCollection {
+  item_type: FeedOrigin.Arxiv
+  item: ArxivEntry
+}
+
+export interface GithubCollection extends BaseCollection {
+  item_type: FeedOrigin.Github
+  item: GithubRepo
+}
+
+export type Collection = ArxivCollection | GithubCollection
+
+export interface AddCollectionRequest {
+  item_type: FeedOrigin
+  /** arxiv_id or String(repo_id) */
+  item_id: string
+}
+
+export interface CollectionGroup {
+  id: number
+  name: string
+  description: string
+  is_public: boolean
+  created_at: string
+  updated_at: string
+  items: Collection[]
+  items_count: number
+}
+
+export interface CreateCollectionGroupRequest {
+  name: string
+  description: string
+  is_public: boolean
+}
+
+export interface CollectionGroupManageItemRequest {
+  action: 'add' | 'remove'
+  collection_ids: number[]
+}
+
+export type PatchCollectionGroupRequest = Partial<CreateCollectionGroupRequest>
+
+export interface BaseHistory {
+  id: number
+  content_type: FeedOrigin
+  viewed_at: string
+}
+
+export interface ArxivHistory extends BaseHistory {
+  content_type: FeedOrigin.Arxiv
+  entry_data: ArxivEntry
+}
+
+export interface GithubHistory extends BaseHistory {
+  content_type: FeedOrigin.Github
+  entry_data: GithubRepo
+}
+
+export type History = ArxivHistory | GithubHistory
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
   register: '/v1/user/register',
   getCurrentUser: '/v1/user/profile',
   getAvatar: '/v1/user/avatar',
+  changePassword: '/v1/user/change-password',
 
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
 
@@ -192,6 +269,17 @@ export const URLS = {
 
   getFollowFeed: '/v1/feed/follow',
   getSubscriptionFeed: '/v1/feed/subscription',
+  getHotFeed: '/v1/feed/hot',
+
+  collections: '/v1/collections/',
+  collection: (id: number) => `/v1/collections/${id}`,
+  collectionGroups: '/v1/collections/groups',
+  collectionGroup: (groupId: number) => `/v1/collections/groups/${groupId}`,
+  collectionGroupManageItems: (groupId: number) =>
+    `/v1/collections/groups/${groupId}/manage_items`,
+
+  history: '/v1/history',
+  historyItem: (id: number) => `/v1/history/${id}/`,
 }
 
 export function login(payload: LoginRequest) {
@@ -216,6 +304,10 @@ export function getUserById(userId: number) {
 
 export function patchProfile(payload: PatchProfileRequest) {
   return client.patch<UserDetail>(URLS.getCurrentUser, payload)
+}
+
+export function changePassword(payload: ChangePasswordRequest) {
+  return client.post<void>(URLS.changePassword, payload)
 }
 
 export function getArxivEntry(arxivId: string) {
@@ -258,6 +350,10 @@ export function getSubscriptionFeed() {
   return client.get<SubscriptionFeed[]>(URLS.getSubscriptionFeed)
 }
 
+export function getHotFeed() {
+  return client.get<HotFeed[]>(URLS.getHotFeed)
+}
+
 export function uploadAvatar(file: File) {
   const formData = new FormData()
   formData.append('avatar', file)
@@ -267,4 +363,58 @@ export function uploadAvatar(file: File) {
       'Content-Type': 'multipart/form-data',
     },
   })
+}
+
+export function getCollections() {
+  return client.get<Collection[]>(URLS.collections)
+}
+
+export function addCollection(payload: AddCollectionRequest) {
+  return client.post<Collection>(URLS.collections, payload)
+}
+
+export function removeCollection(id: number) {
+  return client.delete<void>(URLS.collection(id))
+}
+
+export function getCollectionGroups() {
+  return client.get<CollectionGroup[]>(URLS.collectionGroups)
+}
+
+export function createCollectionGroup(payload: CreateCollectionGroupRequest) {
+  return client.post<CollectionGroup>(URLS.collectionGroups, payload)
+}
+
+export function getCollectionGroup(id: number) {
+  return client.get<CollectionGroup>(URLS.collectionGroup(id))
+}
+
+export function updateCollectionGroup(
+  id: number,
+  payload: PatchCollectionGroupRequest,
+) {
+  return client.patch<CollectionGroup>(URLS.collectionGroup(id), payload)
+}
+
+export function removeCollectionGroup(id: number) {
+  return client.delete<void>(URLS.collectionGroup(id))
+}
+
+export function manageCollectionGroupItems(
+  groupId: number,
+  payload: CollectionGroupManageItemRequest,
+) {
+  return client.post<void>(URLS.collectionGroupManageItems(groupId), payload)
+}
+
+export function getHistory() {
+  return client.get<History[]>(URLS.history)
+}
+
+export function getHistoryItem(id: number) {
+  return client.get<History>(URLS.historyItem(id))
+}
+
+export function removeHistoryItem(id: number) {
+  return client.delete<void>(URLS.historyItem(id))
 }
