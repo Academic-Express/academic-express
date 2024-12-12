@@ -59,16 +59,16 @@ class CollectionTests(TestCase):
 
         # 测试添加 ArXiv 论文
         data = {
-            'type': 'arxiv',
-            'id': self.arxiv_entry.arxiv_id
+            'item_type': 'arxiv',
+            'item_id': self.arxiv_entry.arxiv_id
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # 测试添加 GitHub 仓库
         data = {
-            'type': 'github',
-            'id': self.github_repo.repo_id
+            'item_type': 'github',
+            'item_id': self.github_repo.repo_id
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
