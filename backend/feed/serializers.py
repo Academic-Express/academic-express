@@ -57,3 +57,9 @@ class SubscriptionFeedSerializer(FeedSerializer):
     订阅推荐。
     """
     source = SubscriptionSourceSerializer()
+
+
+class HotFeedSerializer(FeedSerializer):
+    """
+    热门动态。
+    """

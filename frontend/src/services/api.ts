@@ -177,6 +177,8 @@ export type SubscriptionFeed = Feed & {
   }
 }
 
+export type HotFeed = Feed & {}
+
 export interface BaseCollection {
   id: number
   item_type: FeedOrigin
@@ -267,6 +269,7 @@ export const URLS = {
 
   getFollowFeed: '/v1/feed/follow',
   getSubscriptionFeed: '/v1/feed/subscription',
+  getHotFeed: '/v1/feed/hot',
 
   collections: '/v1/collections/',
   collection: (id: number) => `/v1/collections/${id}`,
@@ -345,6 +348,10 @@ export function getFollowFeed() {
 
 export function getSubscriptionFeed() {
   return client.get<SubscriptionFeed[]>(URLS.getSubscriptionFeed)
+}
+
+export function getHotFeed() {
+  return client.get<HotFeed[]>(URLS.getHotFeed)
 }
 
 export function uploadAvatar(file: File) {

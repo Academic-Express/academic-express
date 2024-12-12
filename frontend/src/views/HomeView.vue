@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user'
 
 import FollowFeed from '@/components/feed/FollowFeed.vue'
 import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
+import HotFeed from '@/components/feed/HotFeed.vue'
 import TopicPanel from '@/components/subscription/TopicPanel.vue'
 import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
 import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
@@ -52,7 +53,9 @@ const mainTab = ref('subscription')
             </KeepAlive>
           </TabPanel>
           <TabPanel value="hot">
-            <p>热点追踪组件</p>
+            <KeepAlive>
+              <HotFeed v-if="mainTab === 'hot'" />
+            </KeepAlive>
           </TabPanel>
         </TabPanels>
       </Tabs>
