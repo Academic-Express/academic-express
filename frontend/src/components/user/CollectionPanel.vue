@@ -177,7 +177,7 @@ const deleteCollection = async (id: number) => {
       <!-- 操作按钮列 -->
       <Column :header="t('collections.table.actions')">
         <template #body="slotProps">
-          <div class="flex gap-2">
+          <div class="flex flex-nowrap gap-2 text-nowrap">
             <!-- 视图按钮，动态使用 Vue Router 进行页面跳转 -->
             <Button
               :label="t('common.view')"
