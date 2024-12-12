@@ -94,13 +94,13 @@ const deleteCollection = async (id: number) => {
             rounded
             raised
             @click="loadCollections"
-            label="Refresh"
+            :label="t('common.refresh')"
           />
         </div>
       </template>
 
       <!-- 标题列，动态判断 item_type 来展示 title (arXiv) 或 name (GitHub) -->
-      <Column header="Title">
+      <Column :header="t('collections.table.title')">
         <template #body="slotProps">
           <span v-if="slotProps.data.item_type === 'arxiv'">
             {{ slotProps.data.item?.title || '-' }}
@@ -112,7 +112,7 @@ const deleteCollection = async (id: number) => {
       </Column>
 
       <!-- 作者列，动态显示 arXiv 作者列表或 GitHub 所有者 -->
-      <Column header="Authors/Owner">
+      <Column :header="t('collections.table.authors')">
         <template #body="slotProps">
           <span v-if="slotProps.data.item_type === 'arxiv'">
             <template
@@ -132,14 +132,14 @@ const deleteCollection = async (id: number) => {
       </Column>
 
       <!-- 项目类型列 (arxiv 或 github) -->
-      <Column field="item_type" header="Type">
+      <Column :header="t('collections.table.type')">
         <template #body="slotProps">
           {{ slotProps.data.item_type }}
         </template>
       </Column>
 
       <!-- 链接列，动态渲染 arXiv PDF 链接 或 GitHub URL -->
-      <Column header="Link">
+      <Column :header="t('collections.table.link')">
         <template #body="slotProps">
           <!-- arXiv 链接 -->
           <a
@@ -168,19 +168,19 @@ const deleteCollection = async (id: number) => {
       </Column>
 
       <!-- 保存日期列，格式化显示 -->
-      <Column field="created_at" header="Saved Date">
+      <Column :header="t('collections.table.savedDate')">
         <template #body="slotProps">
           {{ formatDate(slotProps.data.created_at) }}
         </template>
       </Column>
 
       <!-- 操作按钮列 -->
-      <Column header="Actions">
+      <Column :header="t('collections.table.actions')">
         <template #body="slotProps">
           <div class="flex gap-2">
             <!-- 视图按钮，动态使用 Vue Router 进行页面跳转 -->
             <Button
-              :label="'View'"
+              :label="t('common.view')"
               icon="pi pi-eye"
               class="p-button-text"
               @click="
@@ -197,7 +197,7 @@ const deleteCollection = async (id: number) => {
             />
             <!-- 删除按钮 -->
             <Button
-              label="Delete"
+              :label="t('common.delete')"
               icon="pi pi-trash"
               class="p-button-danger p-button-text"
               @click="deleteCollection(slotProps.data.id)"
@@ -210,12 +210,25 @@ const deleteCollection = async (id: number) => {
 </template>
 
 <i18n locale="zh-CN">
-{
-  "collections": {
-    "title": "我的收藏"
+  {
+    "collections": {
+      "title": "我的收藏",
+      "table": {
+        "title": "标题",
+        "authors": "作者/拥有者",
+        "type": "类型",
+        "link": "链接",
+        "savedDate": "保存时间",
+        "actions": "操作"
+      }
+    },
+    "common": {
+      "refresh": "刷新",
+      "view": "查看",
+      "delete": "删除"
+    }
   }
-}
-</i18n>
+  </i18n>
 
 <style scoped>
 .p-datatable {
