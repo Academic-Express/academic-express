@@ -100,7 +100,7 @@ useHead({ title: pageTitle })
 
 watch(
   collected,
-  debounce(async newValue => {
+  debounce(async (newValue: boolean) => {
     if (!githubRepository.value) return
 
     try {
@@ -111,8 +111,8 @@ watch(
           id: githubRepository.value.repo_id,
         })
         await addCollection({
-          type: FeedOrigin.Github, // ✅ 这部分与 Arxiv 不同，item_type 需要是 GitHub
-          id: githubRepository.value.repo_id, // ✅ 这里是 repo_id 不是 arxiv_id
+          item_type: FeedOrigin.Github, // ✅ 这部分与 Arxiv 不同，item_type 需要是 GitHub
+          item_id: githubRepository.value.repo_id, // ✅ 这里是 repo_id 不是 arxiv_id
         })
         toast.add({
           severity: 'success', // 成功提示

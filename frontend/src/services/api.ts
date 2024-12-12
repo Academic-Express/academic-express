@@ -198,9 +198,9 @@ export interface GithubCollection extends BaseCollection {
 export type Collection = ArxivCollection | GithubCollection
 
 export interface AddCollectionRequest {
-  type: FeedOrigin
+  item_type: FeedOrigin
   /** arxiv_id or String(repo_id) */
-  id: string
+  item_id: string
 }
 
 export interface CollectionGroup {

@@ -38,7 +38,7 @@ useHead({ title: pageTitle })
 
 watch(
   collected,
-  debounce(async newValue => {
+  debounce(async (newValue: boolean) => {
     if (!arxivEntry.value) return
 
     try {
@@ -49,8 +49,8 @@ watch(
           id: arxivEntry.value?.arxiv_id,
         })
         await addCollection({
-          type: FeedOrigin.Arxiv,
-          id: arxivEntry.value.arxiv_id,
+          item_type: FeedOrigin.Arxiv,
+          item_id: arxivEntry.value.arxiv_id,
         })
         toast.add({
           severity: 'success', // 成功提示
