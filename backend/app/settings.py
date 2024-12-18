@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'drf_spectacular',
-    'history.apps.HistoryConfig',  # 添加这一行
+    'history.apps.HistoryConfig',
+    'comment.apps.CommentConfig',
 ]
 
 REST_FRAMEWORK = {
