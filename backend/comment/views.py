@@ -28,24 +28,33 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         resource = self.kwargs.get('resource')
-        parent = serializer.validated_data.get('parent')
-        if parent and parent.resource != resource:
-            raise CustomValidationError({
-                'parent': ["回复的评论不属于当前资源"],
-            })
+        if parent := serializer.validated_data.get('parent'):
+            if parent.resource != resource:
+                raise CustomValidationError({
+                    'parent': ["回复的评论不属于当前资源"],
+                })
+            if parent.parent:
+                raise CustomValidationError({
+                    'parent': ["不支持多级回复"],
+                })
         serializer.save(author=self.request.user, resource=resource)
 
     def perform_update(self, serializer):
         comment = self.get_object()
         if comment.author != self.request.user:
             self.permission_denied(
-                self.request, message="Cannot edit another user's comment")
+                self.request, message="无法修改其他用户的评论")
+
+        if 'parent' in serializer.validated_data:
+            raise CustomValidationError({
+                'parent': ["无法修改评论的父评论"],
+            })
         serializer.save()
 
     def perform_destroy(self, instance):
         if instance.author != self.request.user:
             self.permission_denied(
-                self.request, message="Cannot delete another user's comment")
+                self.request, message="无法删除其他用户的评论")
         instance.delete()
 
     @action(detail=True, methods=['post'])
@@ -88,7 +97,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         # 检查权限
         if instance.author != request.user:
             return Response(
-                {"detail": "Cannot edit another user's comment"},
+                {"detail": "无法修改其他用户的评论"},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -104,7 +113,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         # 检查权限
         if instance.author != request.user:
             return Response(
-                {"detail": "Cannot delete another user's comment"},
+                {"detail": "无法删除其他用户的评论"},
                 status=status.HTTP_403_FORBIDDEN
             )
 
