@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from comment.models import Comment, Vote
 from comment.serializers import CommentSerializer, VoteSerializer
+from utils.exceptions import CustomValidationError
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -27,6 +28,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         resource = self.kwargs.get('resource')
+        parent = serializer.validated_data.get('parent')
+        if parent and parent.resource != resource:
+            raise CustomValidationError({
+                'parent': ["回复的评论不属于当前资源"],
+            })
         serializer.save(author=self.request.user, resource=resource)
 
     def perform_update(self, serializer):

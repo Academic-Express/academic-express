@@ -69,6 +69,23 @@ class CommentTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['parent'], self.comment1.id)
 
+        # 创建回复时指定无效的父评论
+        data = {
+            'content': 'Invalid reply',
+            'parent': 0
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 创建回复时指定属于其他资源的父评论
+        data = {
+            'content': 'Invalid reply',
+            'parent': self.comment2.id
+        }
+        url = reverse('comment-list', kwargs={'resource': 'arxiv/2401.00002'})
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_update_comment(self):
         """测试更新评论"""
         self.client.force_authenticate(user=self.user1)
