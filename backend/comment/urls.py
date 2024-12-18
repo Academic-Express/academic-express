@@ -1,4 +1,5 @@
 from django.urls import path
+
 from comment.views import CommentViewSet
 
 comment_vote = CommentViewSet.as_view({

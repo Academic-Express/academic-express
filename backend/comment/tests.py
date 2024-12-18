@@ -2,13 +2,13 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from user.models import User
 from comment.models import Comment, Vote
+from user.models import User
 
 
 class CommentTests(APITestCase):
     client: APIClient
-    
+
     def setUp(self):
         # 创建测试用户
         self.user1 = User.objects.create_user(
