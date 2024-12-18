@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -57,8 +58,18 @@ class CommentViewSet(viewsets.ModelViewSet):
                 self.request, message="无法删除其他用户的评论")
         instance.delete()
 
+    def create(self, request, *args, **kwargs):
+        """
+        创建新评论，如果是回复评论，则需要在请求体中提供 parent 字段。
+        """
+        return super().create(request, *args, **kwargs)
+
+    @extend_schema(request=VoteSerializer)
     @action(detail=True, methods=['post'])
     def vote(self, request, resource, pk=None):
+        """
+        给评论投票，需要提供 value 字段，值为 1 表示赞成，-1 表示反对，0 表示取消投票。
+        """
         comment = self.get_object()
         serializer = VoteSerializer(data=request.data)
 
@@ -81,16 +92,25 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Response(comment_serializer.data, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
+        """
+        获取资源的评论列表，返回所有顶层评论，以及每个顶层评论的回复。
+        """
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        获取单个评论的详细信息，包括作者、投票数、用户投票情况、回复等。
+        """
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
+        """
+        编辑评论内容，只能编辑自己的评论。
+        """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
@@ -108,6 +128,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        删除评论，只能删除自己的评论。
+        """
         instance = self.get_object()
 
         # 检查权限
