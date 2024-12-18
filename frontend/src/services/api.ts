@@ -247,6 +247,35 @@ export interface GithubHistory extends BaseHistory {
 
 export type History = ArxivHistory | GithubHistory
 
+export interface Comment {
+  id: number
+  /** arxiv_id or String(repo_id) */
+  resource: string
+  content: string
+  author: User
+  parent: number | null
+  created_at: string
+  updated_at: string
+  vote_count: number
+  user_vote: number
+  replies: Comment[]
+}
+
+export interface CommentRequest {
+  content: string
+  parent?: number | null
+}
+
+export enum VoteAction {
+  Up = 1,
+  Down = -1,
+  Cancel = 0,
+}
+
+export interface CommentVoteRequest {
+  value: VoteAction
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -280,6 +309,13 @@ export const URLS = {
 
   history: '/v1/history',
   historyItem: (id: number) => `/v1/history/${id}/`,
+
+  comments: (origin: FeedOrigin, resource: string) =>
+    `/v1/comments/${origin}/${resource}/`,
+  comment: (origin: FeedOrigin, resource: string, commentId: number) =>
+    `/v1/comments/${origin}/${resource}/${commentId}/`,
+  commentVote: (origin: FeedOrigin, resource: string, commentId: number) =>
+    `/v1/comments/${origin}/${resource}/${commentId}/vote/`,
 }
 
 export function login(payload: LoginRequest) {
@@ -417,4 +453,48 @@ export function getHistoryItem(id: number) {
 
 export function removeHistoryItem(id: number) {
   return client.delete<void>(URLS.historyItem(id))
+}
+
+export function getComments(origin: FeedOrigin, resource: string) {
+  return client.get<Comment[]>(URLS.comments(origin, resource))
+}
+
+export function postComment(
+  origin: FeedOrigin,
+  resource: string,
+  payload: CommentRequest,
+) {
+  return client.post<Comment>(URLS.comments(origin, resource), payload)
+}
+
+export function editComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+  payload: Omit<CommentRequest, 'parent'>,
+) {
+  return client.patch<Comment>(
+    URLS.comment(origin, resource, commentId),
+    payload,
+  )
+}
+
+export function deleteComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+) {
+  return client.delete<void>(URLS.comment(origin, resource, commentId))
+}
+
+export function voteComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+  payload: CommentVoteRequest,
+) {
+  return client.post<void>(
+    URLS.commentVote(origin, resource, commentId),
+    payload,
+  )
 }
