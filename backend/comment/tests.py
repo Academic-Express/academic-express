@@ -147,6 +147,13 @@ class CommentTests(APITestCase):
         vote.refresh_from_db()
         self.assertEqual(vote.value, Comment.VOTE_DOWN)
 
+        # 取消投票
+        response = self.client.post(url, {'value': Comment.VOTE_CANCEL})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # 检查投票是否被删除
+        self.assertFalse(Vote.objects.filter(comment=self.comment2, user=self.user1).exists())
+
     def test_unauthorized_access(self):
         """测试未认证访问限制"""
         url = reverse('comment-list', kwargs={'resource': self.resource})

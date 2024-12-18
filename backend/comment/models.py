@@ -5,6 +5,7 @@ from django.db import models
 class Comment(models.Model):
     VOTE_UP = 1
     VOTE_DOWN = -1
+    VOTE_CANCEL = 0
     VOTE_CHOICES = [
         (VOTE_UP, 'Up'),
         (VOTE_DOWN, 'Down'),

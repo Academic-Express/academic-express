@@ -63,22 +63,22 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer = VoteSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError(serializer.errors)
 
         value = serializer.validated_data['value']
-
-        try:
+        if value == Comment.VOTE_CANCEL:
+            # 取消投票
+            comment.votes.filter(user=request.user).delete()
+        else:
             vote, created = Vote.objects.update_or_create(
                 comment=comment,
                 user=request.user,
                 defaults={'value': value}
             )
-            # Return updated comment data
-            comment_serializer = CommentSerializer(
-                comment, context={'request': request})
-            return Response(comment_serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Return updated comment data
+        comment_serializer = CommentSerializer(comment, context={'request': request})
+        return Response(comment_serializer.data, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

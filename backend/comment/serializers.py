@@ -45,6 +45,6 @@ class VoteSerializer(serializers.Serializer):
     value = serializers.IntegerField()
 
     def validate_value(self, value):
-        if value not in [Comment.VOTE_UP, Comment.VOTE_DOWN]:
+        if value not in [Comment.VOTE_UP, Comment.VOTE_DOWN, Comment.VOTE_CANCEL]:
             raise serializers.ValidationError("Invalid vote value")
         return value
