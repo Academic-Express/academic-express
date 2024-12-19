@@ -104,11 +104,21 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <img
-          :src="commentUser?.avatar"
+          :src="commentUser.avatar"
           alt="avatar"
           class="inline h-8 w-8 rounded-md"
         />
-        <span class="text-sm font-bold">{{ commentUser?.nickname }}</span>
+        <span class="text-sm font-bold">
+          <RouterLink
+            :to="{
+              name: 'user-profile',
+              params: { userId: commentUser.id },
+            }"
+            class="transition-colors hover:text-blue-500 hover:underline"
+          >
+            {{ commentUser.nickname }}
+          </RouterLink>
+        </span>
       </div>
       <div class="mr-2 flex gap-2">
         <Tag
