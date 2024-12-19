@@ -205,7 +205,11 @@ async function onCollect() {
       </div>
     </div>
     <div class="w-1/3 p-4">
-      <CommentPanel />
+      <CommentPanel
+        v-if="arxivEntry"
+        :origin="FeedOrigin.Arxiv"
+        :resource="arxivEntry.arxiv_id"
+      />
     </div>
   </div>
 </template>
