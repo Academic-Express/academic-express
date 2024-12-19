@@ -21,9 +21,6 @@ import {
 
 import { isUrlAbsolute } from '@/utils'
 
-import '@/assets/github-markdown.css'
-import 'highlight.js/styles/github.css'
-
 const props = defineProps<{
   owner: string
   repo: string

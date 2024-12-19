@@ -13,9 +13,6 @@ import {
   type CommentVoteRequest,
 } from '@/services/api'
 
-import '@/assets/github-markdown.css'
-import 'highlight.js/styles/github.css'
-
 const props = defineProps<{
   comment: Comment
   ownerId?: number // 楼主 ID
