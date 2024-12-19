@@ -91,49 +91,56 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950">
-    <div class="px-2">
-      <!-- Add Comment Button -->
-      <div class="mb-2">
+  <div
+    class="flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
+  >
+    <!-- Add Comment Button -->
+    <div>
+      <Button
+        :label="showInput ? t('cancel') : t('comment')"
+        :icon="showInput ? 'pi pi-times' : 'pi pi-comment'"
+        @click="showInput = !showInput"
+        size="small"
+      ></Button>
+    </div>
+
+    <div v-if="showInput">
+      <Textarea
+        v-model="commentText"
+        :placeholder="t('commentPlaceholder')"
+        rows="4"
+        auto-resize
+        class="max-h-[240px] w-full !overflow-auto rounded-xl"
+      ></Textarea>
+      <div class="mt-2 text-right">
         <Button
-          :label="showInput ? t('cancel') : t('comment')"
-          :icon="showInput ? 'pi pi-times' : 'pi pi-comment'"
-          @click="showInput = !showInput"
+          :label="t('submit')"
+          icon="pi pi-check"
+          @click="onComment"
           size="small"
         ></Button>
-      </div>
-
-      <div v-if="showInput" class="mb-4">
-        <Textarea
-          v-model="commentText"
-          :placeholder="t('commentPlaceholder')"
-          rows="4"
-          auto-resize
-          class="w-full rounded-xl"
-        ></Textarea>
-        <div class="text-right">
-          <Button
-            :label="t('submit')"
-            icon="pi pi-check"
-            @click="onComment"
-            size="small"
-          ></Button>
-        </div>
       </div>
     </div>
 
     <!-- Scrollable Comments List -->
-    <ScrollPanel style="width: 100%; height: 500px" class="px-2">
-      <div v-for="comment in comments" :key="comment.id">
-        <CommentParent
-          :comment="comment"
-          @reply="onReply"
-          @vote="onVote"
-          @delete="onDelete"
-          @edit="onEdit"
-        />
-      </div>
-    </ScrollPanel>
+    <div
+      v-if="comments.length === 0 && !showInput"
+      class="rounded-xl border-2 py-8 text-center text-muted-color"
+    >
+      {{ t('noComments') }}
+    </div>
+
+    <div v-if="comments.length > 0" class="w-full flex-1 overflow-y-auto">
+      <CommentParent
+        v-for="comment in comments"
+        :key="comment.id"
+        :comment="comment"
+        @reply="onReply"
+        @vote="onVote"
+        @delete="onDelete"
+        @edit="onEdit"
+      />
+    </div>
   </div>
 </template>
 
@@ -143,5 +150,6 @@ watchEffect(async () => {
   "cancel": "取消",
   "submit": "提交",
   "commentPlaceholder": "写下你的评论...",
+  "noComments": "暂无评论",
 }
 </i18n>

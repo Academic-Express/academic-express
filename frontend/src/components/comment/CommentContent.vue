@@ -41,7 +41,7 @@ const showFullContent = ref(false)
 const addResponse = ref(false)
 const editComment = ref(false)
 
-const editText = ref('')
+const editText = ref(props.comment.content)
 const responseText = ref('')
 
 const textRef = ref<HTMLElement | null>(null)
@@ -130,7 +130,7 @@ onMounted(() => {
         <span
           v-html="renderedContent"
           ref="textRef"
-          class="w-full text-sm"
+          class="w-full"
           :class="{ 'line-clamp-4': !showFullContent }"
           style="line-height: 2"
         >
@@ -138,7 +138,7 @@ onMounted(() => {
       </div>
       <template v-if="!showFullContent && isTextClipped">
         <span
-          class="cursor-pointer text-sm text-gray-500 underline dark:text-gray-400"
+          class="cursor-pointer text-gray-500 underline dark:text-gray-400"
           @click="showFullContent = true"
           >{{ t('more') }}</span
         >
@@ -154,9 +154,9 @@ onMounted(() => {
       ></Textarea>
     </template>
 
-    <div class="flex items-center justify-between">
+    <div class="mt-2 flex items-center justify-between">
       <ButtonGroup
-        class="flex items-center rounded-full bg-gray-100 dark:bg-gray-800"
+        class="flex items-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
       >
         <Button
           :icon="isThumbUp ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
@@ -167,11 +167,10 @@ onMounted(() => {
             })
           "
           size="small"
-          class="no-hover-bg"
         ></Button>
-        <Button variant="text" size="small" class="no-hover-bg">{{
-          props.comment.vote_count
-        }}</Button>
+        <Button variant="text" size="small" class="no-hover-bg !cursor-default">
+          {{ props.comment.vote_count }}
+        </Button>
         <Button
           :icon="isThumbDown ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
           variant="text"
@@ -181,7 +180,6 @@ onMounted(() => {
             })
           "
           size="small"
-          class="no-hover-bg"
         ></Button>
       </ButtonGroup>
       <div v-if="!editComment">
@@ -196,7 +194,7 @@ onMounted(() => {
           icon="pi pi-pen-to-square"
           variant="text"
           size="small"
-          @click="editComment = !editComment"
+          @click="editComment = true"
         ></Button>
         <Button
           v-if="isSelf"
@@ -210,7 +208,7 @@ onMounted(() => {
       <div v-else>
         <Button
           icon="pi pi-times"
-          @click="(editComment = false), (editText = '')"
+          @click="editComment = false"
           size="small"
           variant="text"
         ></Button>
@@ -235,7 +233,7 @@ onMounted(() => {
         <Button
           :label="t('cancel')"
           icon="pi pi-times"
-          @click="(addResponse = false), (responseText = '')"
+          @click="addResponse = false"
           size="small"
           variant="text"
         ></Button>

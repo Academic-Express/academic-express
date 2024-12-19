@@ -8,7 +8,7 @@ import {
   type CommentVoteRequest,
 } from '@/services/api'
 
-defineProps<{
+const props = defineProps<{
   comment: Comment
   onReply: (payload: CommentRequest) => Promise<void>
   onVote: (commentId: number, payload: CommentVoteRequest) => Promise<void>
@@ -21,6 +21,11 @@ defineProps<{
 
 const showResponses = ref(false)
 const { t } = useI18n()
+
+const onReply = async (payload: CommentRequest) => {
+  await props.onReply(payload)
+  showResponses.value = true
+}
 </script>
 
 <template>
