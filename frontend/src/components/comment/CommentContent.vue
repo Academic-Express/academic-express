@@ -6,6 +6,10 @@ import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import DOMPurify from 'dompurify'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/zh-cn'
+
 import {
   VoteAction,
   type Comment,
@@ -25,6 +29,8 @@ const props = defineProps<{
   ) => Promise<void>
 }>()
 
+dayjs.extend(relativeTime).locale('zh-cn')
+
 const userStore = useUserStore()
 const { t } = useI18n()
 
@@ -33,6 +39,8 @@ const isThumbDown = computed(() => props.comment.user_vote < 0)
 const commentUser = computed(() => props.comment.author)
 const isSelf = computed(() => userStore.user?.id === commentUser.value.id)
 const isOwner = computed(() => props.ownerId === commentUser.value.id)
+const createTime = computed(() => dayjs(props.comment.created_at).fromNow())
+const updateTime = computed(() => dayjs(props.comment.updated_at).fromNow())
 
 const showFullContent = ref(false)
 const addResponse = ref(false)
@@ -108,7 +116,7 @@ onMounted(() => {
           alt="avatar"
           class="inline h-8 w-8 rounded-md"
         />
-        <span class="text-sm font-bold">
+        <span class="max-w-xs truncate text-sm font-bold">
           <RouterLink
             :to="{
               name: 'user-profile',
@@ -118,6 +126,13 @@ onMounted(() => {
           >
             {{ commentUser.nickname }}
           </RouterLink>
+        </span>
+        <span class="text-sm">
+          {{
+            createTime === updateTime
+              ? t('createdAt', { time: createTime })
+              : t('updatedAt', { time: updateTime })
+          }}
         </span>
       </div>
       <div class="mr-2 flex gap-2">
@@ -280,5 +295,7 @@ onMounted(() => {
   "commentOwner": "楼主",
   "commentPlaceholder": "写下你的评论...",
   "editPlaceholder": "编辑评论",
+  "createdAt": "创建于 {time}",
+  "updatedAt": "更新于 {time}",
 }
 </i18n>
