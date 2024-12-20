@@ -43,11 +43,17 @@ const createTime = computed(() => dayjs(props.comment.created_at).fromNow())
 const updateTime = computed(() => dayjs(props.comment.updated_at).fromNow())
 
 const showFullContent = ref(false)
-const addResponse = ref(false)
+const addReply = ref(false)
 const editComment = ref(false)
 
+const showReplyPreview = ref(false)
+const replyPreviewText = ref<string>('')
+
+const showEditPreview = ref(false)
+const editPreviewText = ref<string>('')
+
 const editText = ref(props.comment.content)
-const responseText = ref('')
+const replyText = ref<string>('')
 
 const textRef = ref<HTMLElement | null>(null)
 const isTextClipped = ref(false)
@@ -60,13 +66,15 @@ const checkTextClipping = () => {
 }
 
 const onSubmitReply = async () => {
-  if (responseText.value) {
+  if (replyText.value) {
     await props.onReply({
-      content: responseText.value,
+      content: replyText.value,
       parent: props.comment.parent ?? props.comment.id,
     })
-    addResponse.value = false
-    responseText.value = ''
+    addReply.value = false
+    replyText.value = ''
+    showReplyPreview.value = false
+    replyPreviewText.value = ''
   }
 }
 
@@ -75,6 +83,42 @@ const onSubmitEdit = async () => {
     await props.onEdit(props.comment.id, { content: editText.value })
     editComment.value = false
     editText.value = ''
+    showEditPreview.value = false
+    editPreviewText.value = ''
+  }
+}
+
+const onCancelEdit = async () => {
+  editComment.value = false
+  showEditPreview.value = false
+  editPreviewText.value = ''
+}
+
+const onCancelReply = async () => {
+  addReply.value = false
+  showReplyPreview.value = false
+  replyPreviewText.value = ''
+}
+
+const onPreviewEdit = async () => {
+  if (editText.value) {
+    showEditPreview.value = !showEditPreview.value
+    if (showEditPreview.value) {
+      editPreviewText.value = DOMPurify.sanitize(
+        marked.parse(editText.value) as string,
+      )
+    }
+  }
+}
+
+const onPreviewReply = async () => {
+  if (replyText.value) {
+    showReplyPreview.value = !showReplyPreview.value
+    if (showReplyPreview.value) {
+      replyPreviewText.value = DOMPurify.sanitize(
+        marked.parse(replyText.value) as string,
+      )
+    }
   }
 }
 
@@ -149,14 +193,13 @@ onMounted(() => {
 
     <template v-if="!editComment">
       <div class="mt-2">
-        <span
+        <div
           v-html="renderedContent"
           ref="textRef"
-          class="w-full"
+          class="w-full break-words"
           :class="{ 'line-clamp-4': !showFullContent }"
           style="line-height: 2"
-        >
-        </span>
+        ></div>
       </div>
       <template v-if="!showFullContent && isTextClipped">
         <span
@@ -165,16 +208,29 @@ onMounted(() => {
           >{{ t('more') }}</span
         >
       </template>
+      <template v-if="showFullContent && isTextClipped">
+        <span
+          class="cursor-pointer text-gray-500 underline dark:text-gray-400"
+          @click="showFullContent = false"
+          >{{ t('less') }}</span
+        >
+      </template>
     </template>
-    <template v-else>
+    <div v-else class="mt-2">
       <Textarea
+        v-if="!showEditPreview"
         v-model="editText"
         :placeholder="t('editPlaceholder')"
         rows="2"
         auto-resize
-        class="mt-2 w-full rounded-xl"
+        class="max-h-[240px] w-full !overflow-auto rounded-xl"
       ></Textarea>
-    </template>
+      <div
+        v-if="showEditPreview"
+        v-html="editPreviewText"
+        class="max-h-[240px] overflow-auto break-words"
+      ></div>
+    </div>
 
     <div class="mt-2 flex items-center justify-between">
       <ButtonGroup
@@ -209,7 +265,7 @@ onMounted(() => {
           icon="pi pi-reply"
           variant="text"
           size="small"
-          @click="addResponse = !addResponse"
+          @click="addReply = !addReply"
         ></Button>
         <Button
           v-if="isSelf"
@@ -227,10 +283,17 @@ onMounted(() => {
         >
         </Button>
       </div>
-      <div v-else>
+      <ButtonGroup v-else>
+        <Button
+          icon="pi pi-eye"
+          @click="onPreviewEdit"
+          size="small"
+          variant="text"
+        >
+        </Button>
         <Button
           icon="pi pi-times"
-          @click="editComment = false"
+          @click="onCancelEdit"
           size="small"
           variant="text"
         ></Button>
@@ -240,27 +303,37 @@ onMounted(() => {
           size="small"
           variant="text"
         ></Button>
-      </div>
+      </ButtonGroup>
     </div>
 
-    <div class="mt-2" v-if="addResponse">
+    <div class="mt-2" v-if="addReply && !editComment">
       <Textarea
-        v-model="responseText"
+        v-if="!showReplyPreview"
+        v-model="replyText"
         :placeholder="t('commentPlaceholder')"
         rows="4"
         auto-resize
-        class="w-full rounded-xl"
+        class="max-h-[240px] w-full !overflow-auto rounded-xl"
       ></Textarea>
+      <div
+        v-if="showReplyPreview"
+        v-html="replyPreviewText"
+        class="max-h-[240px] overflow-auto break-words"
+      ></div>
       <div class="text-right">
         <Button
-          :label="t('cancel')"
-          icon="pi pi-times"
-          @click="addResponse = false"
+          icon="pi pi-eye"
+          @click="onPreviewReply"
           size="small"
           variant="text"
         ></Button>
         <Button
-          :label="t('submit')"
+          icon="pi pi-times"
+          @click="onCancelReply"
+          size="small"
+          variant="text"
+        ></Button>
+        <Button
           icon="pi pi-check"
           @click="onSubmitReply"
           size="small"
@@ -291,11 +364,12 @@ onMounted(() => {
   "cancel": "取消",
   "submit": "提交",
   "more": "更多",
+  "less": "收起",
   "me": "我",
   "commentOwner": "楼主",
-  "commentPlaceholder": "写下你的评论...",
+  "commentPlaceholder": "写下你的回复...",
   "editPlaceholder": "编辑评论",
-  "createdAt": "创建于 {time}",
-  "updatedAt": "更新于 {time}",
+  "createdAt": "发表于 {time}",
+  "updatedAt": "修改于 {time}",
 }
 </i18n>
