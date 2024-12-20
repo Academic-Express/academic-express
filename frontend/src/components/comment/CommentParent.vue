@@ -32,6 +32,7 @@ const onReply = async (payload: CommentRequest) => {
   <div class="mb-3 rounded-xl border-2 p-2">
     <CommentContent
       :comment="comment"
+      :key="`${comment.id}@${comment.updated_at}`"
       @reply="onReply"
       @vote="onVote"
       @delete="onDelete"
@@ -59,6 +60,7 @@ const onReply = async (payload: CommentRequest) => {
                 <div class="mb-2 min-w-[250px]">
                   <CommentContent
                     :comment="child_comment"
+                    :key="`${comment.id}@${comment.updated_at}`"
                     :ownerId="comment.author.id"
                     @reply="onReply"
                     @vote="onVote"
