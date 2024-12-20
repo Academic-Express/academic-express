@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -137,3 +138,32 @@ class GithubRepo(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class ResourceClaim(models.Model):
+    """
+    资源认领记录。
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # 使用 settings.AUTH_USER_MODEL 而不是直接引用 User
+        on_delete=models.CASCADE,
+        verbose_name='用户'
+    )
+    resource_type = models.CharField(
+        max_length=10,
+        choices=[
+            ('arxiv', 'ArXiv Paper'),
+            ('github', 'GitHub Repository'),
+        ],
+        verbose_name='资源类型'
+    )
+    resource_id = models.CharField(max_length=255, verbose_name='资源 ID')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
+    class Meta:
+        verbose_name = '资源认领'
+        verbose_name_plural = '资源认领'
+        unique_together = ('user', 'resource_type', 'resource_id')
+
+    def __str__(self):
+        return f'{self.user.username} claimed {self.resource_type}:{self.resource_id}'
