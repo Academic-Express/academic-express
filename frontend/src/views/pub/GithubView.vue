@@ -9,6 +9,7 @@ import DOMPurify from 'dompurify'
 import debounce from 'lodash/debounce'
 import { useToast } from 'primevue/usetoast'
 
+import CommentPanel from '@/components/comment/CommentPanel.vue'
 import {
   getGithubRepo,
   type GithubRepo,
@@ -19,9 +20,6 @@ import {
 } from '@/services/api'
 
 import { isUrlAbsolute } from '@/utils'
-
-import '@/assets/github-markdown.css'
-import 'highlight.js/styles/github.css'
 
 const props = defineProps<{
   owner: string
@@ -165,107 +163,116 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-[960px] p-4">
-    <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950">
-      <!-- Repository Title -->
-      <div class="mb-4 flex items-center">
-        <img
-          v-if="githubRepository"
-          :src="githubRepository.owner.avatar_url"
-          alt="Owner Avatar"
-          class="mr-3 h-10 w-10 rounded-full"
-        />
-        <Skeleton v-else width="40px" height="40px" class="rounded-full" />
-        <h1 class="ml-3 text-2xl font-bold">
-          <a
+  <div class="flex justify-center">
+    <div class="container mx-auto w-2/3 max-w-[960px] p-4">
+      <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950">
+        <!-- Repository Title -->
+        <div class="mb-4 flex items-center">
+          <img
             v-if="githubRepository"
-            :href="githubRepository.html_url"
-            target="_blank"
-            class="text-blue-500 hover:underline"
-          >
-            {{ githubRepository.full_name }}
-          </a>
-          <Skeleton v-else height="2rem" />
-        </h1>
-        <div
-          class="ml-auto flex items-center gap-4"
-          v-if="githubRepository?.homepage"
-        >
-          <Button
-            :label="t('homepage')"
-            icon="pi pi-external-link"
-            severity="success"
-            rounded
-            as="a"
-            :href="githubRepository.homepage"
-            target="_blank"
-          ></Button>
-          <!-- 锁定/解锁按钮（ToggleButton）显示在最右边 -->
-          <Button
-            :icon="collected ? 'pi pi-star-fill' : 'pi pi-star'"
-            class="h-10 w-12"
-            severity="warn"
-            @click="onCollect"
+            :src="githubRepository.owner.avatar_url"
+            alt="Owner Avatar"
+            class="mr-3 h-10 w-10 rounded-full"
           />
-        </div>
-      </div>
-
-      <!-- Repository Description -->
-      <div class="mb-4">
-        <p class="mt-2" v-if="githubRepository">
-          {{ githubRepository.description }}
-        </p>
-        <Skeleton v-else height="1rem" class="mt-2" />
-      </div>
-
-      <!-- Repository Stats -->
-      <div class="mb-4 flex space-x-4" v-if="githubRepository">
-        <!-- Repository Stars -->
-        <Button
-          icon="pi pi-star"
-          severity="info"
-          variant="text"
-          :label="`${githubRepository.stargazers_count} stars`"
-        ></Button>
-
-        <!-- Repository Watchers -->
-        <Button
-          icon="pi pi-eye"
-          severity="warn"
-          variant="text"
-          :label="`${githubRepository.subscribers_count} watching`"
-        ></Button>
-
-        <!-- Repository Forks -->
-        <Button
-          icon="pi pi-share-alt -rotate-90"
-          severity="success"
-          variant="text"
-          :label="`${githubRepository.forks_count} forks`"
-        ></Button>
-      </div>
-
-      <!-- Repository Topics -->
-      <div class="mb-4" v-if="githubRepository?.topics.length">
-        <div class="mt-2 flex flex-wrap gap-2">
-          <Button
-            v-for="topic in githubRepository.topics"
-            :key="topic"
-            class="px-4 py-2"
-            severity="secondary"
+          <Skeleton v-else width="40px" height="40px" class="rounded-full" />
+          <h1 class="ml-3 text-2xl font-bold">
+            <a
+              v-if="githubRepository"
+              :href="githubRepository.html_url"
+              target="_blank"
+              class="text-blue-500 hover:underline"
+            >
+              {{ githubRepository.full_name }}
+            </a>
+            <Skeleton v-else height="2rem" />
+          </h1>
+          <div
+            class="ml-auto flex items-center gap-4"
+            v-if="githubRepository?.homepage"
           >
-            {{ topic }}
-          </Button>
+            <Button
+              :label="t('homepage')"
+              icon="pi pi-external-link"
+              severity="success"
+              rounded
+              as="a"
+              :href="githubRepository.homepage"
+              target="_blank"
+            ></Button>
+            <!-- 锁定/解锁按钮（ToggleButton）显示在最右边 -->
+            <Button
+              :icon="collected ? 'pi pi-star-fill' : 'pi pi-star'"
+              class="h-10 w-12"
+              severity="warn"
+              @click="onCollect"
+            />
+          </div>
+        </div>
+
+        <!-- Repository Description -->
+        <div class="mb-4">
+          <p class="mt-2" v-if="githubRepository">
+            {{ githubRepository.description }}
+          </p>
+          <Skeleton v-else height="1rem" class="mt-2" />
+        </div>
+
+        <!-- Repository Stats -->
+        <div class="mb-4 flex space-x-4" v-if="githubRepository">
+          <!-- Repository Stars -->
+          <Button
+            icon="pi pi-star"
+            severity="info"
+            variant="text"
+            :label="`${githubRepository.stargazers_count} stars`"
+          ></Button>
+
+          <!-- Repository Watchers -->
+          <Button
+            icon="pi pi-eye"
+            severity="warn"
+            variant="text"
+            :label="`${githubRepository.subscribers_count} watching`"
+          ></Button>
+
+          <!-- Repository Forks -->
+          <Button
+            icon="pi pi-share-alt -rotate-90"
+            severity="success"
+            variant="text"
+            :label="`${githubRepository.forks_count} forks`"
+          ></Button>
+        </div>
+
+        <!-- Repository Topics -->
+        <div class="mb-4" v-if="githubRepository?.topics.length">
+          <div class="mt-2 flex flex-wrap gap-2">
+            <Button
+              v-for="topic in githubRepository.topics"
+              :key="topic"
+              class="px-4 py-2"
+              severity="secondary"
+            >
+              {{ topic }}
+            </Button>
+          </div>
+        </div>
+
+        <!-- README Section -->
+        <div class="mt-8" v-if="githubRepository?.readme">
+          <div
+            v-html="renderedReadme"
+            class="prose markdown-body max-w-full"
+          ></div>
         </div>
       </div>
-
-      <!-- README Section -->
-      <div class="mt-8" v-if="githubRepository?.readme">
-        <div
-          v-html="renderedReadme"
-          class="prose markdown-body max-w-full"
-        ></div>
-      </div>
+    </div>
+    <div class="w-1/3 p-4">
+      <CommentPanel
+        v-if="githubRepository"
+        :origin="FeedOrigin.Github"
+        :resource="'id' + githubRepository.repo_id"
+      />
     </div>
   </div>
 </template>
