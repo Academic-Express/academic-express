@@ -283,6 +283,25 @@ export interface ResourceClaim {
   created_at: string
 }
 
+export interface BaseUserResourceClaim {
+  user: number
+  resource_type: FeedOrigin
+  resource_id: string
+  created_at: string
+}
+
+export interface ArxivUserResourceClaim extends BaseUserResourceClaim {
+  resource_type: FeedOrigin.Arxiv
+  resource: ArxivEntry
+}
+
+export interface GithubUserResourceClaim extends BaseUserResourceClaim {
+  resource_type: FeedOrigin.Github
+  resource: GithubRepo
+}
+
+export type UserResourceClaim = ArxivUserResourceClaim | GithubUserResourceClaim
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -523,5 +542,5 @@ export function unclaimResource(origin: FeedOrigin, resource: string) {
 }
 
 export function getUserClaims(userId: number) {
-  return client.get<ResourceClaim[]>(URLS.getUserClaims(userId))
+  return client.get<UserResourceClaim[]>(URLS.getUserClaims(userId))
 }
