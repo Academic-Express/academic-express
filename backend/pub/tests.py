@@ -170,12 +170,8 @@ class ResourceClaimTests(APITestCase):
             'resource_id': self.arxiv_entry.arxiv_id
         })
 
-        # 测试缺少 claim 参数
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
         # 测试认领
-        response = self.client.post(f"{url}?claim=true")
+        response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(ResourceClaim.objects.filter(
             user=self.user,
@@ -184,7 +180,7 @@ class ResourceClaimTests(APITestCase):
         ).exists())
 
         # 测试重复认领
-        response = self.client.post(f"{url}?claim=true")
+        response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(ResourceClaim.objects.filter(
             user=self.user,
@@ -193,7 +189,7 @@ class ResourceClaimTests(APITestCase):
         ).exists())
 
         # 测试取消认领
-        response = self.client.post(f"{url}?claim=false")
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(ResourceClaim.objects.filter(
             user=self.user,
@@ -202,7 +198,7 @@ class ResourceClaimTests(APITestCase):
         ).exists())
 
         # 测试重复取消认领
-        response = self.client.post(f"{url}?claim=false")
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(ResourceClaim.objects.filter(
             user=self.user,
