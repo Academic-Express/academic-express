@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ArxivCategory, ArxivEntry, GithubRepo
+from .models import ArxivCategory, ArxivEntry, GithubRepo, ResourceClaim
 
 
 class ArxivEntryAdmin(admin.ModelAdmin):
@@ -21,6 +21,13 @@ class GithubRepoAdmin(admin.ModelAdmin):
     list_filter = ('language', 'created_at', 'updated_at')
 
 
+class ResourceClaimAdmin(admin.ModelAdmin):
+    list_display = ('user', 'resource_type', 'resource_id', 'created_at')
+    search_fields = ('user__username', 'resource_type', 'resource_id')
+    list_filter = ('resource_type', 'created_at')
+
+
 admin.site.register(ArxivEntry, ArxivEntryAdmin)
 admin.site.register(ArxivCategory, ArxivCategoryAdmin)
 admin.site.register(GithubRepo, GithubRepoAdmin)
+admin.site.register(ResourceClaim, ResourceClaimAdmin)
