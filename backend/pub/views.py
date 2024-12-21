@@ -125,17 +125,17 @@ def get_github_repo(request: Request, owner: str, repo_name: str):
 )
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
-def resource_claim(request: Request, resource: str, resource_id: str) -> Response:
+def resource_claim(request: Request, resource_type: str, resource_id: str) -> Response:
     """
     GET: 获取资源的认领列表
     POST: 认领/取消认领资源
     """
     # 验证资源类型
-    if resource not in ['arxiv', 'github']:
+    if resource_type not in ['arxiv', 'github']:
         raise NotFound('资源类型不存在。')
 
     # 验证资源是否存在
-    if resource == 'arxiv':
+    if resource_type == 'arxiv':
         if not ArxivEntry.objects.filter(arxiv_id=resource_id).exists():
             raise NotFound('ArXiv 论文不存在。')
     else:  # github
@@ -144,7 +144,7 @@ def resource_claim(request: Request, resource: str, resource_id: str) -> Respons
 
     if request.method == 'GET':
         claims = ResourceClaim.objects.filter(
-            resource_type=resource,
+            resource_type=resource_type,
             resource_id=resource_id
         )
         serializer = ResourceClaimSerializer(claims, many=True)
@@ -169,7 +169,7 @@ def resource_claim(request: Request, resource: str, resource_id: str) -> Respons
     if claim_action == 'true':
         claim, created = ResourceClaim.objects.get_or_create(
             user=request.user,
-            resource_type=resource,
+            resource_type=resource_type,
             resource_id=resource_id
         )
         serializer = ResourceClaimSerializer(claim)
@@ -180,7 +180,7 @@ def resource_claim(request: Request, resource: str, resource_id: str) -> Respons
     else:
         ResourceClaim.objects.filter(
             user=request.user,
-            resource_type=resource,
+            resource_type=resource_type,
             resource_id=resource_id
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

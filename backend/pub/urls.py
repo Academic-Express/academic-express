@@ -13,7 +13,7 @@ urlpatterns = [
         views.get_github_repo,
         name='get_github_repo'),
     path(
-        '<str:resource>/<str:resource_id>/claim',
+        '<str:resource_type>/<str:resource_id>/claim',
         views.resource_claim,
         name='resource_claim'),
 ]

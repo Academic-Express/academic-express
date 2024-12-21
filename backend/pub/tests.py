@@ -127,7 +127,7 @@ class ResourceClaimTests(APITestCase):
         )
 
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'arxiv',
+            'resource_type': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
         response = self.client.get(url)
@@ -149,7 +149,7 @@ class ResourceClaimTests(APITestCase):
         )
 
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'github',
+            'resource_type': 'github',
             'resource_id': self.github_repo.repo_id
         })
         response = self.client.get(url)
@@ -166,7 +166,7 @@ class ResourceClaimTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'arxiv',
+            'resource_type': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
 
@@ -238,7 +238,7 @@ class ResourceClaimTests(APITestCase):
     def test_unauthorized_claim(self):
         """测试未认证用户无法认领资源"""
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'arxiv',
+            'resource_type': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
         response = self.client.post(url)
@@ -247,7 +247,7 @@ class ResourceClaimTests(APITestCase):
     def test_invalid_resource_type(self):
         """测试无效的资源类型"""
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'invalid',
+            'resource_type': 'invalid',
             'resource_id': '123'
         })
         response = self.client.get(url)
@@ -256,7 +256,7 @@ class ResourceClaimTests(APITestCase):
     def test_nonexistent_resource(self):
         """测试不存在的资源"""
         url = reverse('pub:resource_claim', kwargs={
-            'resource': 'arxiv',
+            'resource_type': 'arxiv',
             'resource_id': 'nonexistent'
         })
         response = self.client.get(url)
