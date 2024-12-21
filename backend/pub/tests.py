@@ -134,7 +134,7 @@ class ResourceClaimTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['user']['id'], self.user.id)
         self.assertEqual(response.data[0]['resource_type'], 'arxiv')
         self.assertEqual(
             response.data[0]['resource_id'], self.arxiv_entry.arxiv_id)
@@ -156,7 +156,7 @@ class ResourceClaimTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['user']['id'], self.user.id)
         self.assertEqual(response.data[0]['resource_type'], 'github')
         self.assertEqual(
             response.data[0]['resource_id'], self.github_repo.repo_id)
