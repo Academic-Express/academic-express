@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, watch } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import DOMPurify from 'dompurify'
-import debounce from 'lodash/debounce'
 import { useToast } from 'primevue/usetoast'
 
 import CommentPanel from '@/components/comment/CommentPanel.vue'
@@ -17,9 +16,14 @@ import {
   removeCollection,
   getCollections,
   FeedOrigin,
+  claimResource,
+  unclaimResource,
+  getResourceClaims,
+  type User,
 } from '@/services/api'
 
 import { isUrlAbsolute } from '@/utils'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps<{
   owner: string
@@ -36,13 +40,11 @@ const pageTitle = computed(() => {
   return t('_fallbackTitle')
 })
 
-const collected = ref(false) // 标识论文是否已收藏
+const collected = ref(false) // 收藏状态
+const claimed = ref(false) // 认领状态
 const toast = useToast()
-
-async function onCollect() {
-  if (!githubRepository.value) return
-  collected.value = !collected.value // 切换收藏状态
-}
+const userStore = useUserStore()
+const claimedAuthors = ref<User[]>([])
 
 const marked = new Marked(
   markedHighlight({
@@ -95,71 +97,147 @@ const renderedReadme = computed(() => {
 })
 
 useHead({ title: pageTitle })
-
-watch(
-  collected,
-  debounce(async (newValue: boolean) => {
-    if (!githubRepository.value) return
-
-    try {
-      if (newValue) {
-        // 🎉 收藏操作
-        console.log('📢 发送的请求数据:', {
-          type: FeedOrigin.Github, // GitHub 版本
-          id: githubRepository.value.repo_id,
-        })
-        await addCollection({
-          item_type: FeedOrigin.Github, // ✅ 这部分与 Arxiv 不同，item_type 需要是 GitHub
-          item_id: githubRepository.value.repo_id, // ✅ 这里是 repo_id 不是 arxiv_id
-        })
-        toast.add({
-          severity: 'success', // 成功提示
-          summary: '收藏成功',
-          detail: '您已成功收藏该项目',
-          life: 3000, // 提示持续 3 秒
-        })
-        console.log('收藏成功')
-      } else {
-        // 🎉 取消收藏操作
-        const collectionResponse = await getCollections()
-        const collection = collectionResponse.data.find(
-          col =>
-            col.item_id === githubRepository.value?.repo_id &&
-            col.item_type === 'github', // ✅ 确认 item_type 是 'github'
-        )
-        if (collection) {
-          await removeCollection(collection.id)
-          toast.add({
-            severity: 'warn', // 取消提示
-            summary: '取消收藏成功',
-            detail: '您已取消收藏该项目',
-            life: 3000, // 提示持续 3 秒
-          })
-          console.log('取消收藏成功')
-        } else {
-          console.warn('未找到对应的收藏项，无法取消收藏')
-        }
-      }
-    } catch (error) {
-      console.error('收藏操作失败', error)
-    }
-  }, 500), // 防抖 500ms
-)
-
+// 数据加载逻辑
 watchEffect(async () => {
   try {
     const response = await getGithubRepo(props.owner, props.repo)
     githubRepository.value = response.data
+
     const collectionResponse = await getCollections()
     collected.value = collectionResponse.data.some(
       col =>
         col.item_id === githubRepository.value?.repo_id &&
         col.item_type === 'github',
     )
+
+    const claimResponse = await getResourceClaims(
+      FeedOrigin.Github,
+      githubRepository.value.repo_id,
+    )
+    const currentUserId = userStore.user?.id // 动态获取用户 ID
+    claimed.value = claimResponse.data.some(
+      clm => clm.user.id === currentUserId,
+    )
+
+    claimedAuthors.value = claimResponse.data.map(claim => claim.user)
   } catch (error) {
     console.error(error)
   }
 })
+
+// 收藏操作
+async function onCollect() {
+  if (!githubRepository.value) return
+
+  try {
+    if (!collected.value) {
+      await addCollection({
+        item_type: FeedOrigin.Github,
+        item_id: githubRepository.value.repo_id,
+      })
+      toast.add({
+        severity: 'success',
+        summary: t('toast.collectionSuccessSummary'),
+        detail: t('toast.collectionSuccessDetail'),
+        life: 3000,
+      })
+    } else {
+      const collectionResponse = await getCollections()
+      const collection = collectionResponse.data.find(
+        col =>
+          col.item_id === githubRepository.value?.repo_id &&
+          col.item_type === 'github',
+      )
+      if (collection) {
+        await removeCollection(collection.id)
+        toast.add({
+          severity: 'warn',
+          summary: t('toast.removeCollectionSuccessSummary'),
+          detail: t('toast.removeCollectionSuccessDetail'),
+          life: 3000,
+        })
+      }
+    }
+    collected.value = !collected.value
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: t('error.collectionError'),
+      life: 3000,
+    })
+    console.error(error)
+  }
+}
+
+// 认领操作
+async function onClaim() {
+  if (!githubRepository.value) return
+
+  try {
+    const currentUserId = userStore.user?.id // 动态获取用户 ID
+    if (!currentUserId) {
+      toast.add({
+        severity: 'error',
+        summary: t('error.claimError'),
+        detail: t('error.noUserId'),
+        life: 3000,
+      })
+      return
+    }
+
+    if (!claimed.value) {
+      // 用户未认领，执行认领操作
+      await claimResource(FeedOrigin.Github, githubRepository.value.repo_id)
+      claimedAuthors.value = [...claimedAuthors.value, userStore.user as User]
+      toast.add({
+        severity: 'success',
+        summary: t('toast.claimSuccessSummary'),
+        detail: t('toast.claimSuccessDetail'),
+        life: 3000,
+      })
+    } else {
+      // 用户已认领，执行取消认领操作
+      const claimResponse = await getResourceClaims(
+        FeedOrigin.Github,
+        githubRepository.value.repo_id,
+      )
+      const claim = claimResponse.data.find(
+        clm => clm.user.id === currentUserId,
+      )
+
+      if (claim) {
+        await unclaimResource(FeedOrigin.Github, claim.resource_id)
+        claimedAuthors.value = claimedAuthors.value.filter(
+          author => author.id !== currentUserId,
+        )
+        toast.add({
+          severity: 'warn',
+          summary: t('toast.unclaimSuccessSummary'),
+          detail: t('toast.unclaimSuccessDetail'),
+          life: 3000,
+        })
+      } else {
+        // 理论上不会进入此分支，因 claimed.value 应与后台数据同步
+        toast.add({
+          severity: 'error',
+          summary: t('error.claimError'),
+          detail: t('error.unclaimNotFound'),
+          life: 3000,
+        })
+      }
+    }
+
+    // 更新认领状态
+    claimed.value = !claimed.value
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: t('error.claimError'),
+      life: 3000,
+    })
+    console.error(error)
+  }
+}
 </script>
 
 <template>
@@ -205,6 +283,12 @@ watchEffect(async () => {
               class="h-10 w-12"
               severity="warn"
               @click="onCollect"
+            />
+            <Button
+              :icon="claimed ? 'pi pi-times' : 'pi pi-check'"
+              :label="claimed ? t('toggle.unclaimed') : t('toggle.claimed')"
+              class="h-10 w-32 bg-green-500 text-white"
+              @click="onClaim"
             />
           </div>
         </div>
@@ -268,6 +352,39 @@ watchEffect(async () => {
       </div>
     </div>
     <div class="w-1/3 p-4">
+      <!-- 作者列表：展示认领该文章的作者 -->
+      <div
+        v-if="claimedAuthors.length"
+        class="mb-4 flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
+      >
+        <h3 class="mb-4 text-lg font-bold">{{ t('claimedAuthorsTitle') }}</h3>
+        <ul class="space-y-2">
+          <li
+            v-for="author in claimedAuthors"
+            :key="author.id"
+            class="flex items-center space-x-4"
+          >
+            <img
+              :src="author.avatar"
+              alt="Author Avatar"
+              class="h-10 w-10 rounded-full shadow"
+            />
+            <div>
+              <p class="font-medium">
+                <RouterLink
+                  :to="{
+                    name: 'user-profile',
+                    params: { userId: author.id },
+                  }"
+                  class="transition-colors hover:text-blue-500 hover:underline"
+                >
+                  {{ author.nickname }}
+                </RouterLink>
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
       <CommentPanel
         v-if="githubRepository"
         :origin="FeedOrigin.Github"
@@ -298,5 +415,24 @@ watchEffect(async () => {
   "_title": "{full_name} - @:app.name",
   "_fallbackTitle": "GitHub - @:app.name",
   "homepage": "主页",
+  "toast": {
+    "collectionSuccessSummary": "收藏成功",
+    "collectionSuccessDetail": "您已成功收藏该项目",
+    "removeCollectionSuccessSummary": "取消收藏成功",
+    "removeCollectionSuccessDetail": "您已取消收藏该项目",
+    "claimSuccessSummary": "认领成功",
+    "claimSuccessDetail": "您已成功认领该项目",
+    "unclaimSuccessSummary": "取消认领成功",
+    "unclaimSuccessDetail": "您已取消认领该项目"
+  },
+  "error": {
+    "collectionError": "收藏操作失败",
+    "claimError": "认领操作失败"
+  },
+  "toggle": {
+    "claimed": "认领",
+    "unclaimed": "取消认领"
+  },
+  "claimedAuthorsTitle": "认领作者",
 }
 </i18n>

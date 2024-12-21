@@ -7,6 +7,7 @@ import SubscriptionPanel from '@/components/user/SubscriptionPanel.vue'
 import SettingsPanel from '@/components/user/SettingsPanel.vue'
 import CollectionPanel from '@/components/user/CollectionPanel.vue'
 import HistoryPanel from '@/components/user/HistoryPanel.vue'
+import ScholarPanel from '@/components/user/ScholarhomepagePanel.vue'
 
 const { t } = useI18n()
 const selectedItem = ref<string>('user')
@@ -92,7 +93,7 @@ useHead({ title: t('_title') })
         class="mr-8 flex-1 rounded-xl bg-surface-0 p-6 shadow dark:bg-surface-900"
       >
         <template v-if="selectedItem === 'scholar'">
-          <h2>{{ t('accountInfo.scholar') }}</h2>
+          <ScholarPanel />
         </template>
         <template v-else-if="selectedItem === 'user'">
           <SettingsPanel />
