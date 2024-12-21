@@ -14,4 +14,5 @@ urlpatterns = [
     path('profile/<int:pk>', views.get_user_by_id, name='get_user_by_id'),
     path('change-password', views.change_password, name='change_password'),
     path('avatar', views.upload_avatar, name='upload_avatar'),
+    path('profile/<int:pk>/claim', views.get_user_claims, name='get_user_claims'),
 ]

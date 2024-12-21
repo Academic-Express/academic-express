@@ -10,6 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from pub.models import ResourceClaim
+from pub.serializers import ResourceClaimSerializer
 from utils.exceptions import CustomValidationError, ErrorSerializer
 
 from .exceptions import PasswordNotMatch, UserDoesNotExist
@@ -173,4 +175,33 @@ def upload_avatar(request):
     user.save()
 
     serializer = UserDetailSerializer(user)
+    return Response(serializer.data)
+
+
+@extend_schema(
+    operation_id='get_user_claims',
+    responses={
+        200: OpenApiResponse(
+            response=ResourceClaimSerializer(many=True),
+            description='获取用户认领列表成功'
+        ),
+        404: OpenApiResponse(
+            response=ErrorSerializer,
+            description='用户不存在'
+        )
+    }
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_user_claims(request: Request, pk: int) -> Response:
+    """
+    获取用户的全部认领。
+    """
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        raise UserDoesNotExist()
+
+    claims = ResourceClaim.objects.filter(user=user)
+    serializer = ResourceClaimSerializer(claims, many=True)
     return Response(serializer.data)

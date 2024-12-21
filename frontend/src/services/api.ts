@@ -276,6 +276,13 @@ export interface CommentVoteRequest {
   value: VoteAction
 }
 
+export interface ResourceClaim {
+  user: User
+  resource_type: FeedOrigin
+  resource_id: string
+  created_at: string
+}
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -316,6 +323,10 @@ export const URLS = {
     `/v1/comments/${origin}/${resource}/${commentId}/`,
   commentVote: (origin: FeedOrigin, resource: string, commentId: number) =>
     `/v1/comments/${origin}/${resource}/${commentId}/vote/`,
+
+  resourceClaim: (origin: FeedOrigin, resource: string) =>
+    `/v1/pub/claim/${origin}/${resource}`,
+  getUserClaims: (userId: number) => `/v1/user/profile/${userId}/claim`,
 }
 
 export function login(payload: LoginRequest) {
@@ -497,4 +508,20 @@ export function voteComment(
     URLS.commentVote(origin, resource, commentId),
     payload,
   )
+}
+
+export function getResourceClaims(origin: FeedOrigin, resource: string) {
+  return client.get<ResourceClaim[]>(URLS.resourceClaim(origin, resource))
+}
+
+export function claimResource(origin: FeedOrigin, resource: string) {
+  return client.post<ResourceClaim>(URLS.resourceClaim(origin, resource))
+}
+
+export function unclaimResource(origin: FeedOrigin, resource: string) {
+  return client.delete<void>(URLS.resourceClaim(origin, resource))
+}
+
+export function getUserClaims(userId: number) {
+  return client.get<ResourceClaim[]>(URLS.getUserClaims(userId))
 }
