@@ -136,6 +136,7 @@ def save_results_to_db(results: list[ArxivEntrySchema]):
 
     with transaction.atomic():
         ArxivEntry.objects.bulk_create(entries, ignore_conflicts=True)
+        ArxivEntryAuthor.objects.filter(arxiv_entry__in=entries).delete()
         ArxivEntryAuthor.objects.bulk_create(author_instances)
 
 
