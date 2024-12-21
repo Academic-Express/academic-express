@@ -126,7 +126,7 @@ class ResourceClaimTests(APITestCase):
             resource_id=self.arxiv_entry.arxiv_id
         )
 
-        url = reverse('pub:get_resource_claims', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
@@ -148,7 +148,7 @@ class ResourceClaimTests(APITestCase):
             resource_id=self.github_repo.repo_id
         )
 
-        url = reverse('pub:get_resource_claims', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'github',
             'resource_id': self.github_repo.repo_id
         })
@@ -165,14 +165,17 @@ class ResourceClaimTests(APITestCase):
         """测试认领/取消认领资源"""
         self.client.force_authenticate(user=self.user)
 
-        # 测试认领 ArXiv 论文
-        url = reverse('pub:toggle_resource_claim', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
 
-        # 测试认领
+        # 测试缺少 claim 参数
         response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 测试认领
+        response = self.client.post(f"{url}?claim=true")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(ResourceClaim.objects.filter(
             user=self.user,
@@ -180,8 +183,26 @@ class ResourceClaimTests(APITestCase):
             resource_id=self.arxiv_entry.arxiv_id
         ).exists())
 
+        # 测试重复认领
+        response = self.client.post(f"{url}?claim=true")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(ResourceClaim.objects.filter(
+            user=self.user,
+            resource_type='arxiv',
+            resource_id=self.arxiv_entry.arxiv_id
+        ).exists())
+
         # 测试取消认领
-        response = self.client.post(url)
+        response = self.client.post(f"{url}?claim=false")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ResourceClaim.objects.filter(
+            user=self.user,
+            resource_type='arxiv',
+            resource_id=self.arxiv_entry.arxiv_id
+        ).exists())
+
+        # 测试重复取消认领
+        response = self.client.post(f"{url}?claim=false")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(ResourceClaim.objects.filter(
             user=self.user,
@@ -191,7 +212,7 @@ class ResourceClaimTests(APITestCase):
 
     def test_get_user_claims(self):
         """测试获取用户的全部认领"""
-        # 创建一些测���认领数据
+        # 创建一些测试认领数据
         ResourceClaim.objects.create(
             user=self.user,
             resource_type='arxiv',
@@ -216,7 +237,7 @@ class ResourceClaimTests(APITestCase):
 
     def test_unauthorized_claim(self):
         """测试未认证用户无法认领资源"""
-        url = reverse('pub:toggle_resource_claim', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'arxiv',
             'resource_id': self.arxiv_entry.arxiv_id
         })
@@ -225,7 +246,7 @@ class ResourceClaimTests(APITestCase):
 
     def test_invalid_resource_type(self):
         """测试无效的资源类型"""
-        url = reverse('pub:get_resource_claims', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'invalid',
             'resource_id': '123'
         })
@@ -234,7 +255,7 @@ class ResourceClaimTests(APITestCase):
 
     def test_nonexistent_resource(self):
         """测试不存在的资源"""
-        url = reverse('pub:get_resource_claims', kwargs={
+        url = reverse('pub:resource_claim', kwargs={
             'resource': 'arxiv',
             'resource_id': 'nonexistent'
         })

@@ -1,6 +1,7 @@
 from django.db.models import F
-from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import permissions, status
+from drf_spectacular.utils import (OpenApiParameter, OpenApiResponse,
+                                   extend_schema)
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
@@ -86,39 +87,35 @@ def get_github_repo(request: Request, owner: str, repo_name: str):
         )
     }
 )
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_resource_claims(request: Request, resource: str, resource_id: str) -> Response:
-    """
-    获取资源的认领列表。
-    """
-    # 验证资源类型
-    if resource not in ['arxiv', 'github']:
-        raise NotFound('资源类型不存在。')
-
-    # 验证资源是否存在
-    if resource == 'arxiv':
-        if not ArxivEntry.objects.filter(arxiv_id=resource_id).exists():
-            raise NotFound('ArXiv 论文不存在。')
-    else:  # github
-        if not GithubRepo.objects.filter(repo_id=resource_id).exists():
-            raise NotFound('GitHub 仓库不存在。')
-
-    claims = ResourceClaim.objects.filter(
-        resource_type=resource,
-        resource_id=resource_id
-    )
-    serializer = ResourceClaimSerializer(claims, many=True)
-    return Response(serializer.data)
-
-
 @extend_schema(
-    operation_id='toggle_resource_claim',
+    operation_id='resource_claim',
+    methods=['POST'],
+    parameters=[
+        OpenApiParameter(
+            name='claim',
+            type=bool,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description='true 表示认领，false 表示取消认领',
+        ),
+    ],
     request=None,
     responses={
         200: OpenApiResponse(
             response=ResourceClaimSerializer,
-            description='认领/取消认领成功'
+            description='重复认领'
+        ),
+        201: OpenApiResponse(
+            response=ResourceClaimSerializer,
+            description='首次认领成功'
+        ),
+        400: OpenApiResponse(
+            response=ErrorSerializer,
+            description='请求参数错误'
+        ),
+        401: OpenApiResponse(
+            response=ErrorSerializer,
+            description='未认证'
         ),
         404: OpenApiResponse(
             response=ErrorSerializer,
@@ -126,11 +123,12 @@ def get_resource_claims(request: Request, resource: str, resource_id: str) -> Re
         )
     }
 )
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def toggle_resource_claim(request: Request, resource: str, resource_id: str) -> Response:
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def resource_claim(request: Request, resource: str, resource_id: str) -> Response:
     """
-    认领/取消认领资源。
+    GET: 获取资源的认领列表
+    POST: 认领/取消认领资源
     """
     # 验证资源类型
     if resource not in ['arxiv', 'github']:
@@ -144,18 +142,45 @@ def toggle_resource_claim(request: Request, resource: str, resource_id: str) -> 
         if not GithubRepo.objects.filter(repo_id=resource_id).exists():
             raise NotFound('GitHub 仓库不存在。')
 
-    # 尝试获取现有认领
-    claim, created = ResourceClaim.objects.get_or_create(
-        user=request.user,
-        resource_type=resource,
-        resource_id=resource_id
-    )
+    if request.method == 'GET':
+        claims = ResourceClaim.objects.filter(
+            resource_type=resource,
+            resource_id=resource_id
+        )
+        serializer = ResourceClaimSerializer(claims, many=True)
+        return Response(serializer.data)
 
-    if not created:
-        # 如果已存在认领，则取消认领
-        claim.delete()
+    # POST 请求需要认证
+    if not request.user.is_authenticated:
+        return Response(
+            {'detail': '认证信息未提供。'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # 检查是否提供了 claim 参数
+    claim_action = request.query_params.get('claim')
+    if claim_action not in ['true', 'false']:
+        return Response(
+            {'detail': '缺少 claim 参数或参数值无效。'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # 根据 claim 参数决定是认领还是取消认领
+    if claim_action == 'true':
+        claim, created = ResourceClaim.objects.get_or_create(
+            user=request.user,
+            resource_type=resource,
+            resource_id=resource_id
+        )
+        serializer = ResourceClaimSerializer(claim)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+    else:
+        ResourceClaim.objects.filter(
+            user=request.user,
+            resource_type=resource,
+            resource_id=resource_id
+        ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # 返回新创建的认领
-    serializer = ResourceClaimSerializer(claim)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)

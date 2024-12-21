@@ -14,10 +14,6 @@ urlpatterns = [
         name='get_github_repo'),
     path(
         '<str:resource>/<str:resource_id>/claim',
-        views.get_resource_claims,
-        name='get_resource_claims'),
-    path(
-        '<str:resource>/<str:resource_id>/claim/toggle',
-        views.toggle_resource_claim,
-        name='toggle_resource_claim'),
+        views.resource_claim,
+        name='resource_claim'),
 ]
