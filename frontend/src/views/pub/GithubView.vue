@@ -284,12 +284,6 @@ async function onClaim() {
               severity="warn"
               @click="onCollect"
             />
-            <Button
-              :icon="claimed ? 'pi pi-times' : 'pi pi-check'"
-              :label="claimed ? t('toggle.unclaimed') : t('toggle.claimed')"
-              class="h-10 w-32 bg-green-500 text-white"
-              @click="onClaim"
-            />
           </div>
         </div>
 
@@ -354,35 +348,56 @@ async function onClaim() {
     <div class="w-1/3 p-4">
       <!-- 作者列表：展示认领该文章的作者 -->
       <div
-        v-if="claimedAuthors.length"
         class="mb-4 flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
       >
+        <!-- 面板标题 -->
         <h3 class="mb-4 text-lg font-bold">{{ t('claimedAuthorsTitle') }}</h3>
+
+        <!-- 认领按钮 -->
+        <div class="mb-4">
+          <Button
+            :icon="claimed ? 'pi pi-times' : 'pi pi-check'"
+            :label="claimed ? t('toggle.claimed') : t('toggle.unclaimed')"
+            class="h-10 w-32 bg-green-500 text-white"
+            :aria-label="t('toggle.claimButton')"
+            @click="onClaim"
+          />
+        </div>
+
+        <!-- 认领的作者列表 -->
         <ul class="space-y-2">
-          <li
-            v-for="author in claimedAuthors"
-            :key="author.id"
-            class="flex items-center space-x-4"
-          >
-            <img
-              :src="author.avatar"
-              alt="Author Avatar"
-              class="h-10 w-10 rounded-full shadow"
-            />
-            <div>
-              <p class="font-medium">
-                <RouterLink
-                  :to="{
-                    name: 'user-profile',
-                    params: { userId: author.id },
-                  }"
-                  class="transition-colors hover:text-blue-500 hover:underline"
-                >
-                  {{ author.nickname }}
-                </RouterLink>
-              </p>
-            </div>
-          </li>
+          <template v-if="claimedAuthors.length">
+            <li
+              v-for="author in claimedAuthors"
+              :key="author.id"
+              class="flex items-center space-x-4"
+            >
+              <img
+                :src="author.avatar"
+                alt="Author Avatar"
+                class="h-10 w-10 rounded-full shadow"
+              />
+              <div>
+                <p class="font-medium">
+                  <RouterLink
+                    :to="{
+                      name: 'user-profile',
+                      params: { userId: author.id },
+                    }"
+                    class="transition-colors hover:text-blue-500 hover:underline"
+                  >
+                    {{ author.nickname }}
+                  </RouterLink>
+                </p>
+              </div>
+            </li>
+          </template>
+          <!-- 当没有认领作者时，显示提示文本 -->
+          <template v-else>
+            <li class="text-muted-color">
+              {{ t('claimedAuthorsPlaceholder') }}
+            </li>
+          </template>
         </ul>
       </div>
       <CommentPanel
@@ -434,5 +449,6 @@ async function onClaim() {
     "unclaimed": "取消认领"
   },
   "claimedAuthorsTitle": "认领作者",
+  "claimedAuthorsPlaceholder": "暂无认领作者,快来认领吧"
 }
 </i18n>
