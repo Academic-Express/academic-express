@@ -198,7 +198,7 @@ watchEffect(async () => {
         </div>
       </div>
       <div
-        class="mt-8 w-full bg-surface-0 px-8 py-8 dark:bg-surface-900"
+        class="mt-4 w-full bg-surface-0 px-8 py-8 dark:bg-surface-900"
         style="border-radius: 20px"
       >
         <h3 class="mb-4 text-xl font-bold">{{ t('ownershipPanelTitle') }}</h3>

@@ -24,7 +24,7 @@ class ResourceClaimSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResourceClaim
-        fields = ['user', 'resource_type', 'resource_id', 'created_at']
+        fields = ['id', 'user', 'resource_type', 'resource_id', 'created_at']
         read_only_fields = ['created_at']
 
 
@@ -33,7 +33,7 @@ class UserResourceClaimSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResourceClaim
-        fields = ['user', 'resource_type', 'resource_id', 'created_at', 'resource']
+        fields = ['id', 'user', 'resource_type', 'resource_id', 'created_at', 'resource']
         read_only_fields = ['created_at']
 
     @extend_schema_field(PolymorphicProxySerializer(

@@ -9,8 +9,6 @@ import {
   unclaimResource,
   type UserResourceClaim,
   FeedOrigin,
-  type ArxivEntry,
-  type GithubRepo,
 } from '@/services/api'
 import { useUserStore } from '@/stores/user'
 
@@ -57,6 +55,23 @@ const loadClaims = async () => {
   }
 }
 
+const onViewResource = (claim: UserResourceClaim) => {
+  if (claim.resource_type === FeedOrigin.Arxiv) {
+    router.push(`/pub/arxiv/${claim.resource.arxiv_id}`)
+  } else if (claim.resource_type === FeedOrigin.Github) {
+    router.push(`/pub/github/${claim.resource.full_name}`)
+  }
+}
+
+const onUnclaimResource = async (claim: UserResourceClaim) => {
+  if (claim.resource_type === FeedOrigin.Arxiv) {
+    await unclaimResource(claim.resource_type, claim.resource.arxiv_id)
+  } else if (claim.resource_type === FeedOrigin.Github) {
+    await unclaimResource(claim.resource_type, claim.resource.repo_id)
+  }
+  claims.value = claims.value.filter(c => c.id !== claim.id)
+}
+
 // 页面加载时调用
 onMounted(() => {
   loadClaims()
@@ -88,121 +103,84 @@ onMounted(() => {
 
       <!-- 标题列 -->
       <Column :header="t('claims.table.title')" class="w-80">
-        <template #body="slotProps">
+        <template #body="slotProps: { data: UserResourceClaim }">
           <span v-if="slotProps.data.resource_type === FeedOrigin.Arxiv">
-            {{ (slotProps.data.resource as ArxivEntry).title || '-' }}
+            {{ slotProps.data.resource.title || '-' }}
           </span>
           <span v-else-if="slotProps.data.resource_type === FeedOrigin.Github">
-            {{ (slotProps.data.resource as GithubRepo).full_name || '-' }}
+            {{ slotProps.data.resource.full_name || '-' }}
           </span>
         </template>
       </Column>
 
       <!-- 作者列 -->
       <Column :header="t('claims.table.authors')" class="w-80">
-        <template #body="slotProps">
+        <template #body="slotProps: { data: UserResourceClaim }">
           <span v-if="slotProps.data.resource_type === FeedOrigin.Arxiv">
             <template
-              v-for="(author, i) in (slotProps.data.resource as ArxivEntry)
-                .authors || []"
+              v-for="(author, i) in slotProps.data.resource.authors || []"
               :key="i"
             >
               {{ author.name }}
-              <span
-                v-if="
-                  i !==
-                  (slotProps.data.resource as ArxivEntry).authors.length - 1
-                "
+              <span v-if="i !== slotProps.data.resource.authors.length - 1"
                 >,
               </span>
             </template>
           </span>
           <span v-else-if="slotProps.data.resource_type === FeedOrigin.Github">
-            {{ (slotProps.data.resource as GithubRepo).owner.login || '-' }}
+            {{ slotProps.data.resource.owner.login || '-' }}
           </span>
         </template>
       </Column>
 
       <!-- 链接列 -->
       <Column :header="t('claims.table.link')" class="text-nowrap">
-        <template #body="slotProps">
+        <template #body="slotProps: { data: UserResourceClaim }">
           <!-- arXiv 链接 -->
           <a
             v-if="slotProps.data.resource_type === FeedOrigin.Arxiv"
-            :href="(slotProps.data.resource as ArxivEntry).link"
+            :href="slotProps.data.resource.link"
             target="_blank"
             rel="noopener noreferrer"
             class="text-blue-500 hover:underline"
           >
-            {{ (slotProps.data.resource as ArxivEntry).arxiv_id }}
+            {{ slotProps.data.resource.arxiv_id }}
           </a>
           <!-- GitHub 链接 -->
           <a
             v-else-if="slotProps.data.resource_type === FeedOrigin.Github"
-            :href="(slotProps.data.resource as GithubRepo).html_url"
+            :href="slotProps.data.resource.html_url"
             target="_blank"
             rel="noopener noreferrer"
             class="text-blue-500 hover:underline"
           >
-            {{ (slotProps.data.resource as GithubRepo).full_name }}
+            {{ slotProps.data.resource.full_name }}
           </a>
         </template>
       </Column>
 
       <!-- 认领时间列 -->
       <Column :header="t('claims.table.claimedDate')" class="w-60">
-        <template #body="slotProps">
+        <template #body="slotProps: { data: UserResourceClaim }">
           {{ formatDate(slotProps.data.created_at) }}
         </template>
       </Column>
 
       <!-- 操作列 -->
       <Column :header="t('claims.table.actions')" class="w-40 text-nowrap">
-        <template #body="slotProps">
+        <template #body="slotProps: { data: UserResourceClaim }">
           <Button
             :label="t('common.view')"
             icon="pi pi-eye"
             class="p-button-text"
-            @click="
-              () => {
-                const resource = slotProps.data.resource
-                if (slotProps.data.resource_type === FeedOrigin.Arxiv) {
-                  router.push(`/pub/arxiv/${resource.arxiv_id}`)
-                } else if (slotProps.data.resource_type === FeedOrigin.Github) {
-                  router.push(
-                    `/pub/github/${resource.owner.login}/${resource.name}`,
-                  )
-                }
-              }
-            "
+            @click="() => onViewResource(slotProps.data)"
           />
           <!-- 删除按钮 -->
           <Button
             :label="t('common.delete')"
             icon="pi pi-trash"
             class="p-button-danger p-button-text"
-            @click="
-              async () => {
-                if (slotProps.data.resource_type === FeedOrigin.Arxiv) {
-                  await unclaimResource(
-                    slotProps.data.resource_type,
-                    (slotProps.data.resource as ArxivEntry).arxiv_id,
-                  )
-                } else if (slotProps.data.resource_type === FeedOrigin.Github) {
-                  await unclaimResource(
-                    slotProps.data.resource_type,
-                    (slotProps.data.resource as GithubRepo).repo_id,
-                  )
-                }
-                claims = claims.filter(
-                  claim =>
-                    !(
-                      claim.resource_type === slotProps.data.resource_type &&
-                      claim.resource === slotProps.data.resource
-                    ),
-                )
-              }
-            "
+            @click="() => onUnclaimResource(slotProps.data)"
           />
         </template>
       </Column>
