@@ -26,6 +26,7 @@ watchEffect(() => {
 <template>
   <RouterView />
   <Toast />
+  <ConfirmDialog />
 </template>
 
 <style scoped></style>

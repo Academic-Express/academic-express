@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/user'
 import { getUserById, type User } from '@/services/api'
 import { compactButtonDt } from '@/dt'
 import { useHead } from '@unhead/vue'
+import OwnershipPanel from '@/components/user/OwnershipPanel.vue'
 
 const props = defineProps<{
   userId: number
@@ -196,6 +197,13 @@ watchEffect(async () => {
           </div>
         </div>
       </div>
+      <div
+        class="mt-4 w-full bg-surface-0 px-8 py-8 dark:bg-surface-900"
+        style="border-radius: 20px"
+      >
+        <h3 class="mb-4 text-xl font-bold">{{ t('ownershipPanelTitle') }}</h3>
+        <OwnershipPanel :userId="props.userId" />
+      </div>
     </main>
   </div>
 </template>
@@ -221,6 +229,7 @@ watchEffect(async () => {
     "toast": {
       "error": "出错啦！",
       "unknownError": "未知错误",
-    }
+    },
+    "ownershipPanelTitle": "认领工作",
   }
 </i18n>

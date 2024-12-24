@@ -277,6 +277,7 @@ export interface CommentVoteRequest {
 }
 
 export interface ResourceClaim {
+  id: number
   user: User
   resource_type: FeedOrigin
   resource_id: string
@@ -284,6 +285,7 @@ export interface ResourceClaim {
 }
 
 export interface BaseUserResourceClaim {
+  id: number
   user: number
   resource_type: FeedOrigin
   resource_id: string
