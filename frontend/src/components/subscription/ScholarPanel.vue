@@ -9,9 +9,13 @@ import {
   type ScholarSubscription,
 } from '@/services/api'
 import { useBus } from '@/bus'
+import { useCustomToast } from '@/services/toast'
+import { useUserStore } from '@/stores/user'
 
 const { t } = useI18n()
 const bus = useBus()
+const toast = useCustomToast()
+const userStore = useUserStore()
 
 const followedScholars = ref<ScholarSubscription[]>([])
 const newScholar = ref<string>('')
@@ -27,6 +31,16 @@ function isScholarFollowed(name: string) {
 }
 
 async function addScholar(scholarName: string) {
+  if (!userStore.user) {
+    toast.add({
+      severity: 'error',
+      summary: t('toast.addError'),
+      detail: t('toast.notLoggedIn'),
+      life: 5000,
+    })
+    return
+  }
+
   if (isScholarFollowed(scholarName)) {
     return
   }
@@ -38,7 +52,9 @@ async function addScholar(scholarName: string) {
     followedScholars.value.push(response.data)
     bus.emit('subscriptionUpdated', 'scholar')
   } catch (error) {
-    console.error(error)
+    toast.reportError(error, {
+      summary: t('toast.addError'),
+    })
   }
 }
 
@@ -48,6 +64,16 @@ async function onAddScholar() {
 }
 
 async function onRemoveScholar(index: number) {
+  if (!userStore.user) {
+    toast.add({
+      severity: 'error',
+      summary: t('toast.removeError'),
+      detail: t('toast.notLoggedIn'),
+      life: 5000,
+    })
+    return
+  }
+
   try {
     const removedScholar = followedScholars.value[index]
     await unsubscribeScholar(removedScholar.id)
@@ -55,16 +81,24 @@ async function onRemoveScholar(index: number) {
     followedScholars.value.splice(index, 1)
     bus.emit('subscriptionUpdated', 'scholar')
   } catch (error) {
-    console.error(error)
+    toast.reportError(error, {
+      summary: t('toast.removeError'),
+    })
   }
 }
 
 onMounted(async () => {
+  if (!userStore.user) {
+    return
+  }
+
   try {
     const response = await getScholarSubscriptions()
     followedScholars.value = response.data
   } catch (error) {
-    console.error(error)
+    toast.reportError(error, {
+      summary: t('toast.fetchError'),
+    })
   }
 })
 </script>
@@ -137,6 +171,12 @@ onMounted(async () => {
   "followed": {
     "placeholder": "暂未关注任何学者",
     "followedScholars" :"已关注的学者",
+  },
+  "toast": {
+    "addError": "关注失败",
+    "removeError": "取消关注失败",
+    "fetchError": "获取关注学者失败",
+    "notLoggedIn": "登录后才能关注学者",
   }
 }
 </i18n>
