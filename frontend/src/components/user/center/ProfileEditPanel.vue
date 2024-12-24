@@ -23,30 +23,37 @@ const validationSchema = toTypedSchema(
       message: t('validation.phone.invalid'),
     }),
     url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
+    scholar_url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
     intro: z.string().or(z.literal('')),
   }),
 )
 
-const { handleSubmit, errors, meta, isSubmitting } = useForm({
+const getStateFromUser = (user: UserDetail) => ({
+  nickname: user.nickname,
+  email: user.email,
+  phone: user.phone,
+  url: user.url,
+  scholar_url: user.scholar_url,
+  intro: user.intro,
+})
+
+const { handleSubmit, errors, meta, isSubmitting, resetForm } = useForm({
   validationSchema,
-  initialValues: {
-    nickname: props.currentUser.nickname,
-    email: props.currentUser.email,
-    phone: props.currentUser.phone,
-    url: props.currentUser.url,
-    intro: props.currentUser.intro,
-  },
+  initialValues: getStateFromUser(props.currentUser),
 })
 
 const { value: nickname } = useField<string>('nickname')
 const { value: email } = useField<string>('email')
 const { value: phone } = useField<string>('phone')
 const { value: url } = useField<string>('url')
+const { value: scholar_url } = useField<string>('scholar_url')
 const { value: intro } = useField<string>('intro')
 
 const onEditProfile = handleSubmit(async values => {
   try {
     const response = await patchProfile(values)
+
+    resetForm({ values: getStateFromUser(response.data) })
 
     props.onProfileUpdated?.(response.data)
 
@@ -92,6 +99,19 @@ const onEditProfile = handleSubmit(async values => {
       </Message>
     </div>
     <div class="flex flex-col gap-2">
+      <label for="scholar_url">{{ t('scholar_url') }}</label>
+      <InputText v-model="scholar_url" id="scholar_url" type="text" />
+      <Message
+        v-if="errors.scholar_url"
+        severity="error"
+        size="small"
+        variant="simple"
+        class="mx-2"
+      >
+        <span class="text-thin">{{ errors.scholar_url }}</span>
+      </Message>
+    </div>
+    <div class="flex flex-col gap-2">
       <label for="email">{{ t('email') }}</label>
       <InputText v-model="email" id="email" type="text" />
       <Message
@@ -132,6 +152,7 @@ const onEditProfile = handleSubmit(async values => {
         <Button
           :label="t('profileEdit')"
           :disabled="!meta.dirty || !meta.valid || isSubmitting"
+          :loading="isSubmitting"
           @click="onEditProfile"
         ></Button>
       </div>
@@ -143,6 +164,7 @@ const onEditProfile = handleSubmit(async values => {
 {
   "nickname": "昵称",
   "url": "个人主页",
+  "scholar_url": "Google 学术",
   "email": "邮箱",
   "phone": "电话",
   "intro": "个人简介",
