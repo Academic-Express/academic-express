@@ -264,11 +264,9 @@ async function onClaim() {
             </a>
             <Skeleton v-else height="2rem" />
           </h1>
-          <div
-            class="ml-auto flex items-center gap-4"
-            v-if="githubRepository?.homepage"
-          >
+          <div class="ml-auto flex items-center gap-4">
             <Button
+              v-if="githubRepository?.homepage"
               :label="t('homepage')"
               icon="pi pi-external-link"
               severity="success"
