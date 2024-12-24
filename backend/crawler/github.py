@@ -81,15 +81,28 @@ def main(args):
     auth = Auth.Token(args.token)
     g = Github(auth=auth, user_agent=common.USER_AGENT)
 
-    repo_names = get_top_repo_names(args.lang, args.since)
-    repo_entry_list = []
-
-    def task(repo_name):
-        repo = g.get_repo(repo_name)
-        return parse_repo(repo)
-
     with ThreadPoolExecutor(max_workers=args.jobs) as executor:
-        for entry in tqdm(executor.map(task, repo_names), total=len(repo_names)):
+        trending_args = [(lang, since) for lang in args.lang for since in args.since]
+        repo_names: set[str] = set()
+
+        for result in tqdm(
+            executor.map(get_top_repo_names, *zip(*trending_args)),
+            total=len(trending_args),
+            desc="Fetching trending repositories",
+        ):
+            repo_names.update(result)
+
+        repo_entry_list = []
+
+        def task(repo_name):
+            repo = g.get_repo(repo_name)
+            return parse_repo(repo)
+
+        for entry in tqdm(
+            executor.map(task, repo_names),
+            total=len(repo_names),
+            desc="Fetching repository metadata",
+        ):
             repo_entry_list.append(entry)
 
     if args.output:
@@ -136,9 +149,21 @@ def parse_args(args=None):
 
     parser = argparse.ArgumentParser(description="Crawl trending GitHub repositories")
     parser.add_argument("--token", type=str, help="GitHub personal access token")
-    parser.add_argument("--lang", type=str, default="python", help="Programming language")
-    parser.add_argument("--since", choices=["daily", "weekly", "monthly"], default="daily",
-                        help="Trending period")
+    parser.add_argument(
+        "--lang",
+        type=str,
+        nargs="+",
+        default=["python"],
+        help="Programming language")
+    parser.add_argument(
+        "--since",
+        choices=[
+            "daily",
+            "weekly",
+            "monthly"],
+        nargs="+",
+        default=["daily"],
+        help="Trending period")
     parser.add_argument("-j", "--jobs", type=int, default=4, help="Number of jobs")
     parser.add_argument("-o", "--output", type=str, help="Output file path")
     parser.add_argument("--save", action="store_true", help="Save to database")
