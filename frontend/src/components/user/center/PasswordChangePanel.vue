@@ -23,7 +23,7 @@ const passwordSchema = toTypedSchema(
     }),
 )
 
-const { handleSubmit, errors, meta, isSubmitting } = useForm({
+const { handleSubmit, errors, meta, isSubmitting, resetForm } = useForm({
   validationSchema: passwordSchema,
   initialValues: {
     oldPassword: '',
@@ -42,6 +42,8 @@ const onChangePassword = handleSubmit(async values => {
       old_password: values.oldPassword,
       new_password: values.newPassword,
     })
+
+    resetForm()
 
     toast.add({
       severity: 'success',
@@ -130,6 +132,7 @@ const onChangePassword = handleSubmit(async values => {
         <Button
           :label="t('password.conformButton')"
           :disabled="!meta.valid || isSubmitting"
+          :loading="isSubmitting"
           @click="onChangePassword"
         ></Button>
       </div>
