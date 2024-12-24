@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useToast } from 'primevue'
-import { AxiosError } from 'axios'
 
 import { useUserStore } from '@/stores/user'
 import { usePromiseConfirm } from '@/services/confirm'
@@ -12,8 +10,8 @@ import {
   getResourceClaims,
   claimResource,
   unclaimResource,
-  type ErrorResponse,
 } from '@/services/api'
+import { useCustomToast } from '@/services/toast'
 
 const props = defineProps<{
   origin: FeedOrigin
@@ -21,7 +19,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useCustomToast()
 const confirm = usePromiseConfirm()
 const userStore = useUserStore()
 
@@ -34,18 +32,7 @@ watch(
       const response = await getResourceClaims(origin, resource)
       claims.value = response.data
     } catch (error) {
-      let detail = t('toast.unknownError')
-      if (error instanceof AxiosError && error.response?.data) {
-        const data = error.response.data as ErrorResponse
-        detail = data.detail ?? detail
-      }
-      console.error('Failed to fetch claims:', error)
-      toast.add({
-        severity: 'error',
-        summary: t('toast.error'),
-        detail: detail,
-        life: 5000,
-      })
+      toast.reportError(error)
     }
   },
   { immediate: true },
@@ -86,17 +73,8 @@ const onClaim = async () => {
       life: 3000,
     })
   } catch (error) {
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data as ErrorResponse
-      detail = data.detail ?? detail
-    }
-    console.error('Failed to claim resource:', error)
-    toast.add({
-      severity: 'error',
+    toast.reportError(error, {
       summary: t('toast.claimError'),
-      detail: detail,
-      life: 5000,
     })
   }
 }
@@ -132,17 +110,8 @@ const onUnclaim = async () => {
       life: 3000,
     })
   } catch (error) {
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data as ErrorResponse
-      detail = data.detail ?? detail
-    }
-    console.error('Failed to unclaim resource:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('toast.unClaimError'),
-      detail: detail,
-      life: 5000,
+    toast.reportError(error, {
+      summary: t('toast.unclaimError'),
     })
   }
 }
@@ -254,7 +223,7 @@ const onUnclaim = async () => {
     "unclaimSuccess": "取消认领成功",
     "unclaimSuccessDetail": "您已取消认领该项目",
     "claimError": "认领失败",
-    "unClaimError": "取消认领失败",
+    "unclaimError": "取消认领失败",
   },
   "confirm": {
     "header": "提示",

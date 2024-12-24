@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useToast } from 'primevue'
-import { AxiosError } from 'axios'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 
-import {
-  patchProfile,
-  type ErrorResponse,
-  type UserDetail,
-} from '@/services/api'
+import { patchProfile, type UserDetail } from '@/services/api'
+import { useCustomToast } from '@/services/toast'
 
 const props = defineProps<{
   currentUser: UserDetail
@@ -18,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useCustomToast()
 
 const validationSchema = toTypedSchema(
   z.object({
@@ -62,18 +57,7 @@ const onEditProfile = handleSubmit(async values => {
       life: 5000,
     })
   } catch (error) {
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data as ErrorResponse
-      detail = data.detail ?? detail
-    }
-    console.error('Failed to edit profile:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('toast.error'),
-      detail: detail,
-      life: 5000,
-    })
+    toast.reportError(error)
   }
 })
 </script>
