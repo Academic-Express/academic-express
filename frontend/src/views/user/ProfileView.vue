@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import { useUserStore } from '@/stores/user'
 import { getUserById, type User } from '@/services/api'
-import { compactButtonDt } from '@/dt'
+// import { compactButtonDt } from '@/dt'
 import { useHead } from '@unhead/vue'
 import OwnershipPanel from '@/components/user/OwnershipPanel.vue'
 import { useCustomToast } from '@/services/toast'
@@ -48,7 +48,7 @@ watchEffect(async () => {
       class="flex max-w-[960px] flex-1 flex-col items-center justify-center"
     >
       <div
-        class="mb-4 w-full bg-surface-0 p-10 dark:bg-surface-900 sm:px-20"
+        class="mb-4 w-full bg-surface-0 p-6 dark:bg-surface-900 sm:px-20"
         style="border-radius: 20px"
       >
         <div class="my-6 flex items-center justify-center space-x-6">
@@ -85,7 +85,7 @@ watchEffect(async () => {
               ></Button>
             </template>
 
-            <template v-else>
+            <!-- <template v-else>
               <Button
                 :label="t('follow')"
                 icon="pi pi-user-plus"
@@ -97,7 +97,7 @@ watchEffect(async () => {
                 severity="secondary"
                 :dt="compactButtonDt"
               ></Button>
-            </template>
+            </template> -->
           </div>
         </div>
       </div>

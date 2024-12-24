@@ -10,7 +10,7 @@ import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
 import HotFeed from '@/components/feed/HotFeed.vue'
 import TopicPanel from '@/components/subscription/TopicPanel.vue'
 import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
-import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
+// import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -140,13 +140,13 @@ const mainTab = ref('subscription')
         <ScholarPanel />
       </Panel>
 
-      <Panel
+      <!-- <Panel
         :header="t('subscriptionPanel.institutions.header')"
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
         <InstitutionPanel />
-      </Panel>
+      </Panel> -->
     </aside>
   </div>
 </template>
