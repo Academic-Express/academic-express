@@ -18,6 +18,10 @@ const props = defineProps<{
   resource: string
 }>()
 
+const emit = defineEmits<{
+  claimsUpdated: [claims: ResourceClaim[]]
+}>()
+
 const { t } = useI18n()
 const toast = useCustomToast()
 const confirm = usePromiseConfirm()
@@ -36,6 +40,14 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  claims,
+  () => {
+    emit('claimsUpdated', claims.value)
+  },
+  { deep: true },
 )
 
 const claimed = computed(() =>

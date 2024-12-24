@@ -20,6 +20,7 @@ import {
 } from '@/services/api'
 
 import { isUrlAbsolute } from '@/utils'
+import { useClaim } from '@/services/claim'
 
 const props = defineProps<{
   owner: string
@@ -150,6 +151,8 @@ async function onCollect() {
     console.error(error)
   }
 }
+
+const { onClaimsUpdated } = useClaim()
 </script>
 
 <template>
@@ -261,6 +264,7 @@ async function onCollect() {
         v-if="githubRepository"
         :origin="FeedOrigin.Github"
         :resource="githubRepository.repo_id"
+        @claims-updated="onClaimsUpdated"
       />
 
       <CommentPanel

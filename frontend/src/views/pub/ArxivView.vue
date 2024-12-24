@@ -16,6 +16,7 @@ import {
   FeedOrigin,
 } from '@/services/api'
 import { useUserStore } from '@/stores/user'
+import { useClaim } from '@/services/claim'
 
 const props = defineProps<{
   arxivId: string
@@ -109,6 +110,8 @@ async function onCollect() {
     console.error(error)
   }
 }
+
+const { onClaimsUpdated } = useClaim()
 </script>
 
 <template>
@@ -208,6 +211,7 @@ async function onCollect() {
         v-if="arxivEntry"
         :origin="FeedOrigin.Arxiv"
         :resource="arxivEntry.arxiv_id"
+        @claims-updated="onClaimsUpdated"
       />
 
       <CommentPanel
