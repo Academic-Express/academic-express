@@ -16,6 +16,7 @@ import {
   type CommentRequest,
   type CommentVoteRequest,
 } from '@/services/api'
+import { useClaimAuthorIds } from '@/services/claim'
 
 const props = defineProps<{
   comment: Comment
@@ -149,6 +150,8 @@ onMounted(() => {
     checkTextClipping()
   })
 })
+
+const { authorIds } = useClaimAuthorIds()
 </script>
 
 <template>
@@ -180,6 +183,12 @@ onMounted(() => {
         </span>
       </div>
       <div class="mr-2 flex gap-2">
+        <Tag
+          v-if="authorIds.includes(commentUser.id)"
+          value="作者"
+          severity="success"
+          class="shadow"
+        ></Tag>
         <Tag
           v-if="isOwner"
           :value="t('commentOwner')"
