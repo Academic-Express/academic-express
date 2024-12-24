@@ -9,6 +9,7 @@ import DOMPurify from 'dompurify'
 import { useToast } from 'primevue/usetoast'
 
 import CommentPanel from '@/components/comment/CommentPanel.vue'
+import ClaimPanel from '@/components/pub/ClaimPanel.vue'
 import {
   getGithubRepo,
   type GithubRepo,
@@ -16,14 +17,9 @@ import {
   removeCollection,
   getCollections,
   FeedOrigin,
-  claimResource,
-  unclaimResource,
-  getResourceClaims,
-  type User,
 } from '@/services/api'
 
 import { isUrlAbsolute } from '@/utils'
-import { useUserStore } from '@/stores/user'
 
 const props = defineProps<{
   owner: string
@@ -41,10 +37,7 @@ const pageTitle = computed(() => {
 })
 
 const collected = ref(false) // 收藏状态
-const claimed = ref(false) // 认领状态
 const toast = useToast()
-const userStore = useUserStore()
-const claimedAuthors = ref<User[]>([])
 
 const marked = new Marked(
   markedHighlight({
@@ -109,17 +102,6 @@ watchEffect(async () => {
         col.item_id === githubRepository.value?.repo_id &&
         col.item_type === 'github',
     )
-
-    const claimResponse = await getResourceClaims(
-      FeedOrigin.Github,
-      githubRepository.value.repo_id,
-    )
-    const currentUserId = userStore.user?.id // 动态获取用户 ID
-    claimed.value = claimResponse.data.some(
-      clm => clm.user.id === currentUserId,
-    )
-
-    claimedAuthors.value = claimResponse.data.map(claim => claim.user)
   } catch (error) {
     console.error(error)
   }
@@ -163,76 +145,6 @@ async function onCollect() {
     toast.add({
       severity: 'error',
       summary: t('error.collectionError'),
-      life: 3000,
-    })
-    console.error(error)
-  }
-}
-
-// 认领操作
-async function onClaim() {
-  if (!githubRepository.value) return
-
-  try {
-    const currentUserId = userStore.user?.id // 动态获取用户 ID
-    if (!currentUserId) {
-      toast.add({
-        severity: 'error',
-        summary: t('error.claimError'),
-        detail: t('error.noUserId'),
-        life: 3000,
-      })
-      return
-    }
-
-    if (!claimed.value) {
-      // 用户未认领，执行认领操作
-      await claimResource(FeedOrigin.Github, githubRepository.value.repo_id)
-      claimedAuthors.value = [...claimedAuthors.value, userStore.user as User]
-      toast.add({
-        severity: 'success',
-        summary: t('toast.claimSuccessSummary'),
-        detail: t('toast.claimSuccessDetail'),
-        life: 3000,
-      })
-    } else {
-      // 用户已认领，执行取消认领操作
-      const claimResponse = await getResourceClaims(
-        FeedOrigin.Github,
-        githubRepository.value.repo_id,
-      )
-      const claim = claimResponse.data.find(
-        clm => clm.user.id === currentUserId,
-      )
-
-      if (claim) {
-        await unclaimResource(FeedOrigin.Github, claim.resource_id)
-        claimedAuthors.value = claimedAuthors.value.filter(
-          author => author.id !== currentUserId,
-        )
-        toast.add({
-          severity: 'warn',
-          summary: t('toast.unclaimSuccessSummary'),
-          detail: t('toast.unclaimSuccessDetail'),
-          life: 3000,
-        })
-      } else {
-        // 理论上不会进入此分支，因 claimed.value 应与后台数据同步
-        toast.add({
-          severity: 'error',
-          summary: t('error.claimError'),
-          detail: t('error.unclaimNotFound'),
-          life: 3000,
-        })
-      }
-    }
-
-    // 更新认领状态
-    claimed.value = !claimed.value
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: t('error.claimError'),
       life: 3000,
     })
     console.error(error)
@@ -343,61 +255,14 @@ async function onClaim() {
         </div>
       </div>
     </div>
-    <div class="w-1/3 p-4">
+    <div class="flex w-1/3 flex-col gap-6 p-4">
       <!-- 作者列表：展示认领该文章的作者 -->
-      <div
-        class="mb-4 flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
-      >
-        <!-- 面板标题 -->
-        <h3 class="mb-4 text-lg font-bold">{{ t('claimedAuthorsTitle') }}</h3>
+      <ClaimPanel
+        v-if="githubRepository"
+        :origin="FeedOrigin.Github"
+        :resource="githubRepository.repo_id"
+      />
 
-        <!-- 认领按钮 -->
-        <div class="mb-4">
-          <Button
-            :icon="claimed ? 'pi pi-times' : 'pi pi-check'"
-            :label="claimed ? t('toggle.claimed') : t('toggle.unclaimed')"
-            class="h-10 w-32 bg-green-500 text-white"
-            :aria-label="t('toggle.claimButton')"
-            @click="onClaim"
-          />
-        </div>
-
-        <!-- 认领的作者列表 -->
-        <ul class="space-y-2">
-          <template v-if="claimedAuthors.length">
-            <li
-              v-for="author in claimedAuthors"
-              :key="author.id"
-              class="flex items-center space-x-4"
-            >
-              <img
-                :src="author.avatar"
-                alt="Author Avatar"
-                class="h-10 w-10 rounded-full shadow"
-              />
-              <div>
-                <p class="font-medium">
-                  <RouterLink
-                    :to="{
-                      name: 'user-profile',
-                      params: { userId: author.id },
-                    }"
-                    class="transition-colors hover:text-blue-500 hover:underline"
-                  >
-                    {{ author.nickname }}
-                  </RouterLink>
-                </p>
-              </div>
-            </li>
-          </template>
-          <!-- 当没有认领作者时，显示提示文本 -->
-          <template v-else>
-            <li class="text-muted-color">
-              {{ t('claimedAuthorsPlaceholder') }}
-            </li>
-          </template>
-        </ul>
-      </div>
       <CommentPanel
         v-if="githubRepository"
         :origin="FeedOrigin.Github"
@@ -433,20 +298,9 @@ async function onClaim() {
     "collectionSuccessDetail": "您已成功收藏该项目",
     "removeCollectionSuccessSummary": "取消收藏成功",
     "removeCollectionSuccessDetail": "您已取消收藏该项目",
-    "claimSuccessSummary": "认领成功",
-    "claimSuccessDetail": "您已成功认领该项目",
-    "unclaimSuccessSummary": "取消认领成功",
-    "unclaimSuccessDetail": "您已取消认领该项目"
   },
   "error": {
     "collectionError": "收藏操作失败",
-    "claimError": "认领操作失败"
   },
-  "toggle": {
-    "claimed": "认领",
-    "unclaimed": "取消认领"
-  },
-  "claimedAuthorsTitle": "认领作者",
-  "claimedAuthorsPlaceholder": "暂无认领作者,快来认领吧"
 }
 </i18n>
