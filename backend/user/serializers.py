@@ -58,3 +58,12 @@ class UserDetailSerializer(UserSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField()
+
+
+class UserStatsSerializer(serializers.Serializer):
+    topic_count = serializers.IntegerField()
+    scholar_count = serializers.IntegerField()
+    collection_count = serializers.IntegerField()
+    claim_count = serializers.IntegerField()
+    comment_count = serializers.IntegerField()
+    history_count = serializers.IntegerField()

@@ -63,6 +63,15 @@ export interface ChangePasswordRequest {
   new_password: string
 }
 
+export interface UserStats {
+  topic_count: number
+  scholar_count: number
+  collection_count: number
+  claim_count: number
+  comment_count: number
+  history_count: number
+}
+
 export interface ArxivEntry {
   arxiv_id: string
   title: string
@@ -311,6 +320,7 @@ export const URLS = {
   getCurrentUser: '/v1/user/profile',
   getAvatar: '/v1/user/avatar',
   changePassword: '/v1/user/change-password',
+  getSelfStats: '/v1/user/stats',
 
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
 
@@ -376,6 +386,10 @@ export function patchProfile(payload: PatchProfileRequest) {
 
 export function changePassword(payload: ChangePasswordRequest) {
   return client.post<void>(URLS.changePassword, payload)
+}
+
+export function getSelfStats() {
+  return client.get<UserStats>(URLS.getSelfStats)
 }
 
 export function getArxivEntry(arxivId: string) {

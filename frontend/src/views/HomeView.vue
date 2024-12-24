@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/user'
 import FollowFeed from '@/components/feed/FollowFeed.vue'
 import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
 import HotFeed from '@/components/feed/HotFeed.vue'
+import UserStats from '@/components/home/UserStats.vue'
 import TopicPanel from '@/components/subscription/TopicPanel.vue'
 import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
 // import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
@@ -66,7 +67,7 @@ const mainTab = ref('subscription')
       <!-- 用户卡片 -->
       <Card>
         <template #header>
-          <div class="flex items-center p-4">
+          <div class="flex items-center border-b p-4">
             <!-- 用户头像和信息 -->
             <template v-if="userStore.user">
               <Avatar
@@ -76,8 +77,11 @@ const mainTab = ref('subscription')
               ></Avatar>
 
               <div class="ml-4">
-                <div class="text-lg font-bold">
-                  <RouterLink to="/user/center">
+                <div>
+                  <RouterLink
+                    to="/user/center"
+                    class="text-lg font-bold transition-colors hover:text-blue-500"
+                  >
                     {{ userStore.user.username }}
                   </RouterLink>
                 </div>
@@ -87,6 +91,7 @@ const mainTab = ref('subscription')
                     :href="userStore.user.scholar_url"
                     target="_blank"
                     rel="noopener noreferrer"
+                    class="transition-colors hover:text-primary"
                   >
                     {{ t('userPanel.myScholarPage') }}
                   </a>
@@ -119,7 +124,7 @@ const mainTab = ref('subscription')
           </div>
         </template>
         <template #content>
-          <div>用户信息的内容。</div>
+          <UserStats />
         </template>
       </Card>
 
