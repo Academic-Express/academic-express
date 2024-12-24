@@ -16,6 +16,8 @@ import {
 
 dayjs.extend(relativeTime).locale('zh-cn')
 
+const loading = ref(false)
+
 const historyItems = ref<History[]>([])
 const timelineItems = computed(() => {
   // Group history items by viewed_at.
@@ -43,11 +45,14 @@ const timelineItems = computed(() => {
 const { t } = useI18n()
 
 const fetchHistory = async () => {
+  loading.value = true
   try {
     const response = await getHistory()
     historyItems.value = response.data
   } catch (error) {
     console.error(error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -65,8 +70,17 @@ const deleteHistoryItem = async (id: number) => {
 </script>
 
 <template>
-  <template v-if="historyItems.length === 0">
-    <p>{{ t('historyNotFound') }}</p>
+  <div class="mb-2 p-4">
+    <h3 class="text-xl font-bold">{{ t('history') }}</h3>
+  </div>
+
+  <template v-if="loading">
+    <div class="space-y-4 p-4">
+      <Skeleton v-for="i in 5" :key="i" height="1.5em" />
+    </div>
+  </template>
+  <template v-else-if="historyItems.length === 0">
+    <p class="px-4">{{ t('historyNotFound') }}</p>
   </template>
   <template v-else>
     <Timeline class="history" :value="timelineItems" align="left">
@@ -125,6 +139,7 @@ const deleteHistoryItem = async (id: number) => {
 
 <i18n locale="zh-CN">
 {
+  "history": "历史记录",
   "historyNotFound": "未找到历史记录",
   "endOfTimeline": "没有更多记录了",
 }
