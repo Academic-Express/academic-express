@@ -2,6 +2,7 @@ FROM node:20
 WORKDIR /app
 
 COPY package*.json ./
+ARG NPM_EXTRA_ARGS
 RUN npm install ${NPM_EXTRA_ARGS}
 
 COPY . .
