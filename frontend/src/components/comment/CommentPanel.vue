@@ -3,7 +3,7 @@ import { ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
-import hljs from 'highlight.js'
+import hljs from 'highlight.js/lib/common'
 import DOMPurify from 'dompurify'
 
 import CommentParent from './CommentParent.vue'
