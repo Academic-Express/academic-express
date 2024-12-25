@@ -3,6 +3,7 @@ import { onMounted, watchEffect } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { useUserStore } from './stores/user'
 import { useThemeStore } from './stores/theme'
+import { ConfirmPopup } from 'primevue'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -27,6 +28,7 @@ watchEffect(() => {
   <RouterView />
   <Toast position="top-center" />
   <ConfirmDialog />
+  <ConfirmPopup group="popup" />
 </template>
 
 <style scoped></style>
