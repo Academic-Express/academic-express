@@ -132,7 +132,7 @@ watchEffect(async () => {
 
 <template>
   <div
-    class="flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
+    class="flex max-h-[800px] flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-900"
   >
     <!-- Add Comment Button -->
     <div>
