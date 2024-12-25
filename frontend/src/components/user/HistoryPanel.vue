@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed, onActivated } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -15,6 +16,8 @@ import {
 } from '@/services/api'
 
 dayjs.extend(relativeTime).locale('zh-cn')
+
+const router = useRouter()
 
 const loading = ref(false)
 
@@ -58,6 +61,26 @@ const fetchHistory = async () => {
 
 onMounted(fetchHistory)
 onActivated(fetchHistory)
+
+const viewHistoryItem = (item: History) => {
+  if (item.content_type === FeedOrigin.Arxiv) {
+    router.push({
+      name: 'pub-arxiv',
+      params: {
+        arxivId: item.entry_data.arxiv_id,
+        slug: item.entry_data.slug,
+      },
+    })
+  } else if (item.content_type === FeedOrigin.Github) {
+    router.push({
+      name: 'pub-github',
+      params: {
+        owner: item.entry_data.owner.login,
+        repo: item.entry_data.name,
+      },
+    })
+  }
+}
 
 const deleteHistoryItem = async (id: number) => {
   try {
@@ -108,18 +131,25 @@ const deleteHistoryItem = async (id: number) => {
 
             <div class="flex flex-col justify-center">
               <Button
+                class="hover:!text-primary"
+                icon="pi pi-link"
+                variant="text"
+                severity="secondary"
+                @click="viewHistoryItem(item)"
+              ></Button>
+              <Button
                 class="hover:!text-red-600"
                 icon="pi pi-trash"
                 variant="text"
                 severity="secondary"
                 @click="deleteHistoryItem(item.id)"
               ></Button>
-              <Button
+              <!-- <Button
                 class="hover:!text-blue-600"
                 icon="pi pi-star"
                 variant="text"
                 severity="secondary"
-              ></Button>
+              ></Button> -->
             </div>
           </div>
 
