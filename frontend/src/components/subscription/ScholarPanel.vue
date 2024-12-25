@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { onMounted, ref } from 'vue'
+import { onActivated, ref, watch } from 'vue'
 
 import {
   getScholarSubscriptions,
@@ -87,8 +87,9 @@ async function onRemoveScholar(index: number) {
   }
 }
 
-onMounted(async () => {
+const fetchScholars = async () => {
   if (!userStore.user) {
+    followedScholars.value = []
     return
   }
 
@@ -100,7 +101,11 @@ onMounted(async () => {
       summary: t('toast.fetchError'),
     })
   }
-})
+}
+
+watch(() => userStore.user, fetchScholars, { immediate: true })
+
+onActivated(fetchScholars)
 </script>
 
 <template>
