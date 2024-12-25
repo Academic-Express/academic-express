@@ -1,4 +1,4 @@
-from locust import HttpUser, TaskSet, task, between
+from locust import HttpUser, TaskSet, between, task
 
 
 class UserBehavior(TaskSet):
@@ -38,6 +38,11 @@ class UserBehavior(TaskSet):
             response = self.client.post("/api/v1/comments/resource/", json={
                 "content": "This is a test comment."
             })
+            if response.status_code == 201:
+                comment_id = response.json().get("id")
+                self.client.get(f"/api/v1/comments/{comment_id}")
+            else:
+                print(f"Post comment failed: {response.status_code} {response.text}")
 
     @task(4)
     def view_hot_feed(self):
