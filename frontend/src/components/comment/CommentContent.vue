@@ -17,6 +17,7 @@ import {
   type CommentVoteRequest,
 } from '@/services/api'
 import { useClaimAuthorIds } from '@/services/claim'
+import { usePromiseConfirm } from '@/services/confirm'
 
 const props = defineProps<{
   comment: Comment
@@ -34,6 +35,7 @@ dayjs.extend(relativeTime).locale('zh-cn')
 
 const userStore = useUserStore()
 const { t } = useI18n()
+const confirm = usePromiseConfirm()
 
 const isThumbUp = computed(() => props.comment.user_vote > 0)
 const isThumbDown = computed(() => props.comment.user_vote < 0)
@@ -123,7 +125,24 @@ const onPreviewReply = async () => {
   }
 }
 
-const onDeleteComment = async () => {
+const onDeleteComment = async (event: MouseEvent) => {
+  const ret = await confirm.require({
+    group: 'popup',
+    target: event.currentTarget as HTMLElement,
+    message:
+      props.comment.parent !== null
+        ? t('confirm.deleteReply')
+        : t('confirm.deleteComment'),
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: t('confirm.yes'),
+    rejectLabel: t('confirm.no'),
+    acceptProps: { severity: 'danger' },
+    rejectProps: { severity: 'secondary', outlined: true },
+  })
+  if (!ret) {
+    return
+  }
+
   await props.onDelete(props.comment.id)
 }
 
@@ -380,5 +399,11 @@ const { authorIds } = useClaimAuthorIds()
   "editPlaceholder": "编辑评论",
   "createdAt": "发表于 {time}",
   "updatedAt": "修改于 {time}",
+  "confirm": {
+    "deleteComment": "删除这条评论？所有回复也会被删除。",
+    "deleteReply": "删除这条回复？",
+    "yes": "是",
+    "no": "否",
+  }
 }
 </i18n>
