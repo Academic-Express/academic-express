@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import ArxivItem from './ArxivItem.vue'
 import {
@@ -9,15 +10,23 @@ import {
 } from '@/services/api'
 import { useEvent } from '@/bus'
 import GithubItem from './GithubItem.vue'
+import { useCustomToast } from '@/services/toast'
 
+const { t } = useI18n()
+const toast = useCustomToast()
+
+const loading = ref(false)
 const subscriptionFeeds = ref<SubscriptionFeed[]>([])
 
 async function fetchSubscriptionFeed() {
+  loading.value = true
   try {
     const response = await getSubscriptionFeed()
     subscriptionFeeds.value = response.data
   } catch (error) {
-    console.error(error)
+    toast.reportError(error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -48,4 +57,22 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
     />
     <hr class="my-4" />
   </template>
+
+  <template v-if="loading && subscriptionFeeds.length === 0">
+    <Skeleton v-for="i in 5" :key="i" class="mb-4" />
+  </template>
+
+  <p v-if="!loading" class="text-center text-muted-color">
+    {{ subscriptionFeeds.length > 0 ? t('end') : t('empty') }}
+  </p>
 </template>
+
+<i18n locale="zh-CN">
+{
+  "empty": "暂无订阅推荐，试试添加一些订阅话题吧",
+  "end": "没有更多内容了",
+  "toast": {
+    "error": "订阅推荐加载失败",
+  },
+}
+</i18n>

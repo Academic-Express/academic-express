@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import AvatarPopup from '@/components/user/AvatarPopup.vue'
 import ProfileEditPanel from './center/ProfileEditPanel.vue'
 import PasswordChangePanel from './center/PasswordChangePanel.vue'
+import { compactButtonDt } from '@/dt'
 
 const isAvatarPopupVisible = ref(false)
 
@@ -28,7 +29,7 @@ const onAvatarUpdated = (newAvatarUrl: string) => {
     >
       <!-- 头像 -->
       <div class="mb-4 w-full p-10 sm:px-20" style="border-radius: 20px">
-        <div class="flex items-center justify-center space-x-6">
+        <div class="flex items-center justify-center gap-6">
           <img
             :src="userStore.user?.avatar"
             alt="Avatar"
@@ -36,19 +37,31 @@ const onAvatarUpdated = (newAvatarUrl: string) => {
           />
 
           <div
-            class="min-w-32 text-left text-3xl font-medium text-surface-900 dark:text-surface-0 sm:min-w-48"
+            class="text-left text-3xl font-medium text-surface-900 dark:text-surface-0"
           >
             {{ t('userWelcome', { username: userStore.user?.username }) }}
           </div>
-          <Button
-            :label="t('editImage')"
-            icon="pi pi-pencil"
-            @click="isAvatarPopupVisible = true"
-          ></Button>
-          <AvatarPopup
-            v-model:visible="isAvatarPopupVisible"
-            @update-avatar="onAvatarUpdated"
-          />
+
+          <div class="ml-4 flex flex-col items-center justify-center gap-4">
+            <Button
+              :label="t('editImage')"
+              icon="pi pi-pencil"
+              @click="isAvatarPopupVisible = true"
+              :dt="compactButtonDt"
+            ></Button>
+
+            <Button
+              :label="t('userProfile')"
+              icon="pi pi-address-book"
+              as="router-link"
+              :to="{
+                name: 'user-profile',
+                params: { userId: userStore.user?.id },
+              }"
+              severity="secondary"
+              :dt="compactButtonDt"
+            ></Button>
+          </div>
         </div>
       </div>
 
@@ -68,6 +81,11 @@ const onAvatarUpdated = (newAvatarUrl: string) => {
         </div>
       </div>
     </main>
+
+    <AvatarPopup
+      v-model:visible="isAvatarPopupVisible"
+      @update-avatar="onAvatarUpdated"
+    />
   </div>
 </template>
 
@@ -76,6 +94,7 @@ const onAvatarUpdated = (newAvatarUrl: string) => {
 <i18n locale="zh-CN">
 {
   "editImage": "修改头像",
+  "userProfile": "个人主页",
   "userWelcome": "{username}, 您好",
 }
 </i18n>

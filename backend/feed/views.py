@@ -15,7 +15,7 @@ from utils.exceptions import ErrorSerializer
 from utils.feed_engine import session
 
 from .serializers import (FollowFeedSerializer, HotFeedSerializer,
-                          SubscriptionFeedSerializer)
+                          SearchResultSerializer, SubscriptionFeedSerializer)
 
 
 class FollowSource(TypedDict):
@@ -325,8 +325,8 @@ def get_hot_feed(request: Request):
         })
 
     # 分别标准化两个集合的得分。
-    normalize_hot_scores(arxiv_candidates)
-    normalize_hot_scores(github_candidates)
+    normalize_scores(arxiv_candidates)
+    normalize_scores(github_candidates)
 
     # 按得分排序候选集。
     candidates = arxiv_candidates + github_candidates
@@ -367,16 +367,134 @@ def get_github_hot_score(github_repo: GithubRepo) -> float:
     return view_count * freshness_score
 
 
-def normalize_hot_scores(candidates: list[HotCandidate]) -> None:
+class SupportsScore(TypedDict):
+    _score: float
+
+
+def normalize_scores(
+        candidates: list[SupportsScore],
+        mean: float = 0.0,
+        std: float = 1.0,
+        epsilon: float = 1e-6) -> None:
     """
-    标准化热点追踪得分。
+    标准化候选集的得分。
     """
     if not candidates:
         return
 
     scores = [candidate['_score'] for candidate in candidates]
     mean_score = sum(scores) / len(scores)
-    std_score = (sum((score - mean_score) ** 2 for score in scores) / len(scores)) ** 0.5 + 1e-6
+    std_score = (sum((score - mean_score) ** 2 for score in scores) / len(scores)) ** 0.5 + epsilon
 
     for candidate in candidates:
-        candidate['_score'] = (candidate['_score'] - mean_score) / std_score
+        z_score = (candidate['_score'] - mean_score) / std_score
+        candidate['_score'] = mean + std * z_score
+
+
+class SearchResult(TypedDict):
+    origin: str
+    item: Union[ArxivEntry, GithubRepo]
+    timestamp: datetime
+
+    _score: float
+
+
+@extend_schema(
+    operation_id='get_search_results',
+    responses={
+        200: OpenApiResponse(
+            SearchResultSerializer(many=True),
+            description='获取搜索结果成功',
+        ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_search_results(request: Request):
+    """
+    获取搜索结果。
+    """
+    query = request.query_params.get('q', '')
+    if not query:
+        return Response([])
+
+    search_results: list[SearchResult] = []
+
+    # 按作者搜索 arXiv 论文。
+    normalized = normalize_author(query)
+    arxiv_entries = ArxivEntry.objects.filter(
+        arxiventryauthor__first_name=normalized['first_name'],
+        arxiventryauthor__last_name=normalized['last_name'],
+    ).order_by('-published')[:20]
+
+    for entry in arxiv_entries:
+        search_results.append({
+            'origin': 'arxiv',
+            'item': entry,
+            'timestamp': entry.published,
+            '_score': 5.0 - (now() - entry.published).days / 365,
+        })
+
+    search_payload = {
+        'queries': [query],
+        'max_results': 50,
+    }
+
+    # 从推荐后端中获取 arXiv 论文。
+    response = session.post('/arxiv/search', json=search_payload)
+    response.raise_for_status()
+    arxiv_search_results = response.json()[0]
+    arxiv_candidates: list[SearchResult] = []
+
+    # print("arxiv scores:", [entry['score'] for entry in arxiv_search_results])
+
+    for entry in arxiv_search_results:
+        if entry['score'] < 0.6:
+            break
+
+        try:
+            arxiv_entry = ArxivEntry.objects.get(arxiv_id=entry['entry_id'])
+        except ArxivEntry.DoesNotExist:
+            continue
+
+        arxiv_candidates.append({
+            'origin': 'arxiv',
+            'item': arxiv_entry,
+            'timestamp': arxiv_entry.published,
+            '_score': entry['score'],
+        })
+
+    normalize_scores(arxiv_candidates)
+    search_results.extend(arxiv_candidates)
+
+    # 从推荐后端中获取 GitHub 仓库。
+    response = session.post('/github/search', json=search_payload)
+    response.raise_for_status()
+    github_search_results = response.json()[0]
+    github_candidates: list[SearchResult] = []
+
+    # print("github scores:", [entry['score'] for entry in github_search_results])
+
+    for entry in github_search_results:
+        if entry['score'] < 0.6:
+            break
+
+        try:
+            github_repo = GithubRepo.objects.get(full_name=entry['entry_id'])
+        except GithubRepo.DoesNotExist:
+            continue
+
+        github_candidates.append({
+            'origin': 'github',
+            'item': github_repo,
+            'timestamp': github_repo.pushed_at,
+            '_score': entry['score'],
+        })
+
+    normalize_scores(github_candidates)
+    search_results.extend(github_candidates)
+
+    # 按得分排序搜索结果。
+    search_results.sort(key=lambda result: result['_score'], reverse=True)
+
+    return Response(SearchResultSerializer(search_results, many=True).data)

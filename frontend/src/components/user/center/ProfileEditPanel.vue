@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useToast } from 'primevue'
-import { AxiosError } from 'axios'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 
-import {
-  patchProfile,
-  type ErrorResponse,
-  type UserDetail,
-} from '@/services/api'
+import { patchProfile, type UserDetail } from '@/services/api'
+import { useCustomToast } from '@/services/toast'
 
 const props = defineProps<{
   currentUser: UserDetail
@@ -18,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useCustomToast()
 
 const validationSchema = toTypedSchema(
   z.object({
@@ -28,30 +23,37 @@ const validationSchema = toTypedSchema(
       message: t('validation.phone.invalid'),
     }),
     url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
+    scholar_url: z.string().url(t('validation.url.invalid')).or(z.literal('')),
     intro: z.string().or(z.literal('')),
   }),
 )
 
-const { handleSubmit, errors, meta, isSubmitting } = useForm({
+const getStateFromUser = (user: UserDetail) => ({
+  nickname: user.nickname,
+  email: user.email,
+  phone: user.phone,
+  url: user.url,
+  scholar_url: user.scholar_url,
+  intro: user.intro,
+})
+
+const { handleSubmit, errors, meta, isSubmitting, resetForm } = useForm({
   validationSchema,
-  initialValues: {
-    nickname: props.currentUser.nickname,
-    email: props.currentUser.email,
-    phone: props.currentUser.phone,
-    url: props.currentUser.url,
-    intro: props.currentUser.intro,
-  },
+  initialValues: getStateFromUser(props.currentUser),
 })
 
 const { value: nickname } = useField<string>('nickname')
 const { value: email } = useField<string>('email')
 const { value: phone } = useField<string>('phone')
 const { value: url } = useField<string>('url')
+const { value: scholar_url } = useField<string>('scholar_url')
 const { value: intro } = useField<string>('intro')
 
 const onEditProfile = handleSubmit(async values => {
   try {
     const response = await patchProfile(values)
+
+    resetForm({ values: getStateFromUser(response.data) })
 
     props.onProfileUpdated?.(response.data)
 
@@ -62,18 +64,7 @@ const onEditProfile = handleSubmit(async values => {
       life: 5000,
     })
   } catch (error) {
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data as ErrorResponse
-      detail = data.detail ?? detail
-    }
-    console.error('Failed to edit profile:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('toast.error'),
-      detail: detail,
-      life: 5000,
-    })
+    toast.reportError(error)
   }
 })
 </script>
@@ -105,6 +96,19 @@ const onEditProfile = handleSubmit(async values => {
         class="mx-2"
       >
         <span class="text-thin">{{ errors.url }}</span>
+      </Message>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="scholar_url">{{ t('scholar_url') }}</label>
+      <InputText v-model="scholar_url" id="scholar_url" type="text" />
+      <Message
+        v-if="errors.scholar_url"
+        severity="error"
+        size="small"
+        variant="simple"
+        class="mx-2"
+      >
+        <span class="text-thin">{{ errors.scholar_url }}</span>
       </Message>
     </div>
     <div class="flex flex-col gap-2">
@@ -148,6 +152,7 @@ const onEditProfile = handleSubmit(async values => {
         <Button
           :label="t('profileEdit')"
           :disabled="!meta.dirty || !meta.valid || isSubmitting"
+          :loading="isSubmitting"
           @click="onEditProfile"
         ></Button>
       </div>
@@ -159,6 +164,7 @@ const onEditProfile = handleSubmit(async values => {
 {
   "nickname": "昵称",
   "url": "个人主页",
+  "scholar_url": "Google 学术",
   "email": "邮箱",
   "phone": "电话",
   "intro": "个人简介",

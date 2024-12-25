@@ -1,5 +1,9 @@
 {
   "app": {
     "name": "学术直通车"
+  },
+  "toast": {
+    "error": "请求失败",
+    "unknownError": "未知错误"
   }
 }

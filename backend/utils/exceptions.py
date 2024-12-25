@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers, status
-from rest_framework.exceptions import APIException, ErrorDetail
+from rest_framework.exceptions import (APIException, ErrorDetail,
+                                       ValidationError)
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -19,6 +20,11 @@ class CustomValidationError(APIException):
                             'detail': str(item),
                             'code': item.code,
                         }
+                    else:
+                        value[i] = {
+                            'detail': str(item),
+                            'code': 'invalid',
+                        }
 
         super().__init__({
             'detail': detail or self.default_detail,
@@ -34,6 +40,9 @@ class ErrorSerializer(serializers.Serializer):
 
 
 def custom_exception_handler(exc, context):
+    if isinstance(exc, ValidationError):
+        exc = CustomValidationError(exc.detail)
+
     response = exception_handler(exc, context)
 
     if response is None and not settings.DEBUG:

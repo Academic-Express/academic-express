@@ -1,10 +1,14 @@
 import itertools
 import json
 import multiprocessing
+import re
 import sys
 import xml.etree.ElementTree as ET
-from typing import Optional
+from datetime import datetime, timedelta
+from typing import Iterator, NamedTuple, Optional
+from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from pub.schema import ArxivAuthorSchema, ArxivEntrySchema
@@ -89,35 +93,99 @@ def parse_author(author: ET.Element, ns: dict) -> ArxivAuthorSchema:
     return data
 
 
+class ArxivIdRange(NamedTuple):
+    month: str
+    start: int
+    end: int
+
+    def arxiv_ids(self) -> list[str]:
+        return [f"{self.month}.{i:05d}" for i in range(self.start, self.end + 1)]
+
+
 def main(args):
     if not args.output and not args.save:
         raise ValueError("No output specified, use --output or --save")
 
-    arxiv_ids = [f"{args.month}.{i:05d}" for i in range(args.start, args.end + 1)]
-    batches = [list(batch) for batch in itertools.batched(arxiv_ids, args.batch)]
-
-    def filter_result(metadata: ArxivEntrySchema):
-        return metadata["primary_category"].startswith(args.prefix)
-
     if args.output:
         out_file = open(args.output, "w")
 
-    if args.save:
+    if args.save or args.catchup:
         common.setup_database()
 
+    if args.catchup:
+        id_ranges = get_catchup_id_ranges()
+    else:
+        if any(arg is None for arg in (args.month, args.start, args.end)):
+            raise ValueError("Month, start, and end must be specified")
+        id_ranges = [ArxivIdRange(args.month, args.start, args.end)]
+
+    def filter_result(metadata: ArxivEntrySchema):
+        return metadata["primary_category"].startswith(args.category + ".")
+
     with multiprocessing.Pool(processes=args.jobs) as pool:
-        for results in tqdm(pool.imap_unordered(fetch_arxiv_metadata, batches), total=len(batches)):
-            filtered_results = list(filter(filter_result, results))
+        for id_range in id_ranges:
+            batches = itertools.batched(id_range.arxiv_ids(), args.batch)
+            batches = [list(batch) for batch in batches]
 
-            if args.save:
-                save_results_to_db(filtered_results)
+            for results in tqdm(
+                pool.imap_unordered(fetch_arxiv_metadata, batches),
+                total=len(batches),
+                desc=f"Fetching {id_range.month} ({id_range.start}-{id_range.end})",
+            ):
+                filtered_results = list(filter(filter_result, results))
 
-            if args.output:
-                for result in filtered_results:
-                    print(json.dumps(result), file=out_file)
+                if args.save:
+                    save_results_to_db(filtered_results)
+
+                if args.output:
+                    for result in filtered_results:
+                        print(json.dumps(result), file=out_file)
 
     if args.output:
         out_file.close()
+
+
+def get_catchup_id_ranges() -> Iterator[ArxivIdRange]:
+    from pub.models import ArxivEntry
+
+    latest_entry = ArxivEntry.objects.order_by("-arxiv_id").first()
+    assert latest_entry is not None, "No existing entries found"
+
+    m = re.match(r"(\d{4}).(\d{5})v(\d+)", latest_entry.arxiv_id)
+    assert m is not None, "Invalid arXiv ID format"
+
+    latest_month = datetime.strptime(m.group(1), "%y%m")
+    latest_index = int(m.group(2))
+    today = datetime.now()
+
+    while latest_month <= today:
+        yield ArxivIdRange(
+            month=latest_month.strftime("%y%m"),
+            start=latest_index + 1,
+            end=get_month_end_index(latest_month),
+        )
+
+        latest_month = (latest_month + timedelta(days=31)).replace(day=1)
+        latest_index = 0
+
+
+def get_month_end_index(month: datetime) -> int:
+    url = f"https://arxiv.org/list/cs/{month.strftime("%Y-%m")}"
+    response = session.get(url)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    page_links = soup.find("div", class_="paging").find_all("a")
+    if page_links:
+        last_page_url = urljoin(url, page_links[-1]["href"])
+        response = session.get(last_page_url)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+    entries = soup.find("dl", id="articles").find_all("dt")
+    last_entry_id = entries[-1].find("a", title="Abstract")["id"]
+    return int(last_entry_id.split(".")[-1]) + 1000
 
 
 def save_results_to_db(results: list[ArxivEntrySchema]):
@@ -136,6 +204,7 @@ def save_results_to_db(results: list[ArxivEntrySchema]):
 
     with transaction.atomic():
         ArxivEntry.objects.bulk_create(entries, ignore_conflicts=True)
+        ArxivEntryAuthor.objects.filter(arxiv_entry__in=entries).delete()
         ArxivEntryAuthor.objects.bulk_create(author_instances)
 
 
@@ -143,12 +212,14 @@ def parse_args(args=None):
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--month", type=str, required=True,
-                        help="Year and month in YYMM format")
-    parser.add_argument("-s", "--start", type=int, required=True, help="Start index")
-    parser.add_argument("-e", "--end", type=int, required=True, help="End index")
+    parser.add_argument("-m", "--month", type=str, help="Year and month in YYMM format")
+    parser.add_argument("-s", "--start", type=int, help="Start index")
+    parser.add_argument("-e", "--end", type=int, help="End index")
+    parser.add_argument(
+        "--catchup", action="store_true",
+        help="Catch up to the latest index (requires --save, overrides --month, --start, --end)")
     parser.add_argument("-b", "--batch", type=int, default=200, help="Batch size")
-    parser.add_argument("-p", "--prefix", type=str, default="cs.", help="Primary category prefix")
+    parser.add_argument("--category", type=str, default="cs", help="Primary category")
     parser.add_argument("-j", "--jobs", type=int, default=4, help="Number of jobs")
     parser.add_argument("-o", "--output", type=str, help="Output file path")
     parser.add_argument("--save", action="store_true", help="Save to database")

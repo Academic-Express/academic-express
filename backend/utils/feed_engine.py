@@ -6,7 +6,7 @@ class FeedEngineSession(requests.Session):
     def __init__(self):
         super().__init__()
         self.headers.update({
-            'Authorization': f'Token {settings.FEED_ENGINE_TOKEN}',
+            'Authorization': f'Bearer {settings.FEED_ENGINE_TOKEN}',
         })
 
     def request(self, method, url, *args, **kwargs):

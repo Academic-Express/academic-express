@@ -2,7 +2,11 @@ import 'primeicons/primeicons.css'
 import './assets/tailwind.css'
 import './assets/main.css'
 
-import { createApp } from 'vue'
+import '@/assets/github-markdown.css'
+import hljsLightTheme from 'highlight.js/styles/github.css?inline'
+import hljsDarkTheme from 'highlight.js/styles/github-dark.css?inline'
+
+import { createApp, watchEffect } from 'vue'
 import { createPinia } from 'pinia'
 import { createHead } from '@unhead/vue'
 import PrimeVue from 'primevue/config'
@@ -14,6 +18,7 @@ import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
 import bus from './bus'
+import { useThemeStore } from './stores/theme'
 
 const app = createApp(App)
 
@@ -35,3 +40,11 @@ app.use(ToastService)
 app.use(bus)
 
 app.mount('#app')
+
+const themeStore = useThemeStore()
+const style = document.createElement('style')
+document.head.appendChild(style)
+
+watchEffect(() => {
+  style.textContent = themeStore.darkMode ? hljsDarkTheme : hljsLightTheme
+})

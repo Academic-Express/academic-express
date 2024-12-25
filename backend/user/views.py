@@ -10,12 +10,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from pub.models import ResourceClaim
+from pub.serializers import UserResourceClaimSerializer
 from utils.exceptions import CustomValidationError, ErrorSerializer
 
 from .exceptions import PasswordNotMatch, UserDoesNotExist
 from .models import User
 from .serializers import (ChangePasswordSerializer, RegisterSerializer,
-                          UserDetailSerializer, UserSerializer)
+                          UserDetailSerializer, UserSerializer,
+                          UserStatsSerializer)
 
 # Create your views here.
 
@@ -173,4 +176,76 @@ def upload_avatar(request):
     user.save()
 
     serializer = UserDetailSerializer(user)
+    return Response(serializer.data)
+
+
+@extend_schema(
+    operation_id='get_user_claims',
+    responses={
+        200: OpenApiResponse(
+            response=UserResourceClaimSerializer(many=True),
+            description='获取用户认领列表成功'
+        ),
+        404: OpenApiResponse(
+            response=ErrorSerializer,
+            description='用户不存在'
+        )
+    }
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_user_claims(request: Request, pk: int) -> Response:
+    """
+    获取用户的全部认领。
+    """
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        raise UserDoesNotExist()
+
+    claims = ResourceClaim.objects.filter(user=user)
+    serializer = UserResourceClaimSerializer(claims, many=True)
+    return Response(serializer.data)
+
+
+@extend_schema(
+    operation_id='get_self_stats',
+    responses={
+        200: OpenApiResponse(
+            response=UserStatsSerializer,
+            description='获取用户统计数据成功'
+        ),
+        401: OpenApiResponse(
+            response=ErrorSerializer,
+            description='未登录'
+        ),
+        404: OpenApiResponse(
+            response=ErrorSerializer,
+            description='用户不存在'
+        )
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_self_stats(request: Request) -> Response:
+    """
+    获取当前登录用户的统计数据。
+    """
+    user = request.user
+
+    topic_count = user.topicsubscription_set.count()
+    scholar_count = user.scholarsubscription_set.count()
+    collection_count = user.collection_set.count()
+    claim_count = user.resourceclaim_set.count()
+    comment_count = user.comment_set.count()
+    history_count = user.history_set.count()
+
+    serializer = UserStatsSerializer({
+        'topic_count': topic_count,
+        'scholar_count': scholar_count,
+        'collection_count': collection_count,
+        'claim_count': claim_count,
+        'comment_count': comment_count,
+        'history_count': history_count,
+    })
     return Response(serializer.data)

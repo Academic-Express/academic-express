@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useToast } from 'primevue'
-import { AxiosError } from 'axios'
 
 import { useUserStore } from '@/stores/user'
 import { getUserById, type User } from '@/services/api'
-import { compactButtonDt } from '@/dt'
+// import { compactButtonDt } from '@/dt'
 import { useHead } from '@unhead/vue'
+import OwnershipPanel from '@/components/user/OwnershipPanel.vue'
+import { useCustomToast } from '@/services/toast'
 
 const props = defineProps<{
   userId: number
@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const userStore = useUserStore()
-const toast = useToast()
+const toast = useCustomToast()
 
 const fetchedUser = ref<User | null>(null)
 const isSelf = computed(() => userStore.user?.id === props.userId)
@@ -37,19 +37,7 @@ watchEffect(async () => {
     const response = await getUserById(props.userId)
     fetchedUser.value = response.data
   } catch (error) {
-    console.error(error)
-
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError) {
-      detail = error.response?.data.detail ?? detail
-    }
-
-    toast.add({
-      severity: 'error',
-      summary: t('toast.error'),
-      detail,
-      life: 5000,
-    })
+    toast.reportError(error)
   }
 })
 </script>
@@ -60,7 +48,7 @@ watchEffect(async () => {
       class="flex max-w-[960px] flex-1 flex-col items-center justify-center"
     >
       <div
-        class="mb-4 w-full bg-surface-0 p-10 dark:bg-surface-900 sm:px-20"
+        class="mb-4 w-full bg-surface-0 p-6 dark:bg-surface-900 sm:px-20"
         style="border-radius: 20px"
       >
         <div class="my-6 flex items-center justify-center space-x-6">
@@ -97,7 +85,7 @@ watchEffect(async () => {
               ></Button>
             </template>
 
-            <template v-else>
+            <!-- <template v-else>
               <Button
                 :label="t('follow')"
                 icon="pi pi-user-plus"
@@ -109,7 +97,7 @@ watchEffect(async () => {
                 severity="secondary"
                 :dt="compactButtonDt"
               ></Button>
-            </template>
+            </template> -->
           </div>
         </div>
       </div>
@@ -196,6 +184,13 @@ watchEffect(async () => {
           </div>
         </div>
       </div>
+      <div
+        class="mt-4 w-full bg-surface-0 px-8 py-8 dark:bg-surface-900"
+        style="border-radius: 20px"
+      >
+        <h3 class="mb-4 text-xl font-bold">{{ t('ownershipPanelTitle') }}</h3>
+        <OwnershipPanel :userId="props.userId" />
+      </div>
     </main>
   </div>
 </template>
@@ -221,6 +216,7 @@ watchEffect(async () => {
     "toast": {
       "error": "出错啦！",
       "unknownError": "未知错误",
-    }
+    },
+    "ownershipPanelTitle": "认领工作",
   }
 </i18n>

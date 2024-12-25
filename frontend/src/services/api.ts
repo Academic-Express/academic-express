@@ -63,6 +63,15 @@ export interface ChangePasswordRequest {
   new_password: string
 }
 
+export interface UserStats {
+  topic_count: number
+  scholar_count: number
+  collection_count: number
+  claim_count: number
+  comment_count: number
+  history_count: number
+}
+
 export interface ArxivEntry {
   arxiv_id: string
   title: string
@@ -179,6 +188,8 @@ export type SubscriptionFeed = Feed & {
 
 export type HotFeed = Feed & {}
 
+export type SearchResult = Feed & {}
+
 export interface BaseCollection {
   id: number
   item_type: FeedOrigin
@@ -247,6 +258,63 @@ export interface GithubHistory extends BaseHistory {
 
 export type History = ArxivHistory | GithubHistory
 
+export interface Comment {
+  id: number
+  /** arxiv_id or String(repo_id) */
+  resource: string
+  content: string
+  author: User
+  parent: number | null
+  created_at: string
+  updated_at: string
+  vote_count: number
+  user_vote: number
+  replies: Comment[]
+}
+
+export interface CommentRequest {
+  content: string
+  parent?: number | null
+}
+
+export enum VoteAction {
+  Up = 1,
+  Down = -1,
+  Cancel = 0,
+}
+
+export interface CommentVoteRequest {
+  value: VoteAction
+}
+
+export interface ResourceClaim {
+  id: number
+  user: User
+  resource_type: FeedOrigin
+  resource_id: string
+  created_at: string
+}
+
+export interface BaseUserResourceClaim {
+  id: number
+  user: number
+  resource_type: FeedOrigin
+  resource_id: string
+  created_at: string
+}
+
+export interface ArxivUserResourceClaim extends BaseUserResourceClaim {
+  resource_type: FeedOrigin.Arxiv
+  resource: ArxivEntry
+}
+
+export interface GithubUserResourceClaim extends BaseUserResourceClaim {
+  resource_type: FeedOrigin.Github
+  resource: GithubRepo
+}
+
+export type UserResourceClaim = ArxivUserResourceClaim | GithubUserResourceClaim
+
 export const URLS = {
   login: '/v1/user/login',
   refreshLogin: '/v1/user/login/refresh',
@@ -254,6 +322,7 @@ export const URLS = {
   getCurrentUser: '/v1/user/profile',
   getAvatar: '/v1/user/avatar',
   changePassword: '/v1/user/change-password',
+  getSelfStats: '/v1/user/stats',
 
   getUserById: (userId: number) => `/v1/user/profile/${userId}`,
 
@@ -270,6 +339,7 @@ export const URLS = {
   getFollowFeed: '/v1/feed/follow',
   getSubscriptionFeed: '/v1/feed/subscription',
   getHotFeed: '/v1/feed/hot',
+  getSearchResult: '/v1/feed/search',
 
   collections: '/v1/collections/',
   collection: (id: number) => `/v1/collections/${id}`,
@@ -280,6 +350,17 @@ export const URLS = {
 
   history: '/v1/history',
   historyItem: (id: number) => `/v1/history/${id}/`,
+
+  comments: (origin: FeedOrigin, resource: string) =>
+    `/v1/comments/${origin}/${resource}/`,
+  comment: (origin: FeedOrigin, resource: string, commentId: number) =>
+    `/v1/comments/${origin}/${resource}/${commentId}/`,
+  commentVote: (origin: FeedOrigin, resource: string, commentId: number) =>
+    `/v1/comments/${origin}/${resource}/${commentId}/vote/`,
+
+  resourceClaim: (origin: FeedOrigin, resource: string) =>
+    `/v1/pub/claim/${origin}/${resource}`,
+  getUserClaims: (userId: number) => `/v1/user/profile/${userId}/claim`,
 }
 
 export function login(payload: LoginRequest) {
@@ -308,6 +389,10 @@ export function patchProfile(payload: PatchProfileRequest) {
 
 export function changePassword(payload: ChangePasswordRequest) {
   return client.post<void>(URLS.changePassword, payload)
+}
+
+export function getSelfStats() {
+  return client.get<UserStats>(URLS.getSelfStats)
 }
 
 export function getArxivEntry(arxivId: string) {
@@ -352,6 +437,14 @@ export function getSubscriptionFeed() {
 
 export function getHotFeed() {
   return client.get<HotFeed[]>(URLS.getHotFeed)
+}
+
+export function getSearchResult(query: string) {
+  return client.get<SearchResult[]>(URLS.getSearchResult, {
+    params: {
+      q: query,
+    },
+  })
 }
 
 export function uploadAvatar(file: File) {
@@ -417,4 +510,64 @@ export function getHistoryItem(id: number) {
 
 export function removeHistoryItem(id: number) {
   return client.delete<void>(URLS.historyItem(id))
+}
+
+export function getComments(origin: FeedOrigin, resource: string) {
+  return client.get<Comment[]>(URLS.comments(origin, resource))
+}
+
+export function postComment(
+  origin: FeedOrigin,
+  resource: string,
+  payload: CommentRequest,
+) {
+  return client.post<Comment>(URLS.comments(origin, resource), payload)
+}
+
+export function editComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+  payload: Omit<CommentRequest, 'parent'>,
+) {
+  return client.patch<Comment>(
+    URLS.comment(origin, resource, commentId),
+    payload,
+  )
+}
+
+export function deleteComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+) {
+  return client.delete<void>(URLS.comment(origin, resource, commentId))
+}
+
+export function voteComment(
+  origin: FeedOrigin,
+  resource: string,
+  commentId: number,
+  payload: CommentVoteRequest,
+) {
+  return client.post<void>(
+    URLS.commentVote(origin, resource, commentId),
+    payload,
+  )
+}
+
+export function getResourceClaims(origin: FeedOrigin, resource: string) {
+  return client.get<ResourceClaim[]>(URLS.resourceClaim(origin, resource))
+}
+
+export function claimResource(origin: FeedOrigin, resource: string) {
+  return client.post<ResourceClaim>(URLS.resourceClaim(origin, resource))
+}
+
+export function unclaimResource(origin: FeedOrigin, resource: string) {
+  return client.delete<void>(URLS.resourceClaim(origin, resource))
+}
+
+export function getUserClaims(userId: number) {
+  return client.get<UserResourceClaim[]>(URLS.getUserClaims(userId))
 }

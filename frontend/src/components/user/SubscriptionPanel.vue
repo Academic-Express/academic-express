@@ -14,7 +14,7 @@ const mainTab = ref('topic')
     <TabList class="mb-4 overflow-hidden">
       <Tab value="topic">{{ t('subscriptionPanel.topic') }}</Tab>
       <Tab value="scholar">{{ t('subscriptionPanel.scholar') }}</Tab>
-      <Tab value="institution">{{ t('subscriptionPanel.institution') }}</Tab>
+      <!-- <Tab value="institution">{{ t('subscriptionPanel.institution') }}</Tab> -->
     </TabList>
     <TabPanels>
       <TabPanel value="topic">

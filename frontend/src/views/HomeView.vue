@@ -8,9 +8,11 @@ import { useUserStore } from '@/stores/user'
 import FollowFeed from '@/components/feed/FollowFeed.vue'
 import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
 import HotFeed from '@/components/feed/HotFeed.vue'
+import SearchFeed from '@/components/feed/SearchFeed.vue'
+import UserStats from '@/components/home/UserStats.vue'
 import TopicPanel from '@/components/subscription/TopicPanel.vue'
 import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
-import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
+// import InstitutionPanel from '@/components/subscription/InstitutionPanel.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -18,6 +20,7 @@ const userStore = useUserStore()
 useHead({ title: t('_title') })
 
 const mainTab = ref('subscription')
+const searchText = ref('')
 </script>
 
 <template>
@@ -30,18 +33,28 @@ const mainTab = ref('subscription')
           <Tab value="follow">{{ t('main.follow') }}</Tab>
           <Tab value="subscription">{{ t('main.subscription') }}</Tab>
           <Tab value="hot">{{ t('main.hot') }}</Tab>
-          <div class="ml-8 content-center">
+          <Tab value="search">{{ t('main.search') }}</Tab>
+          <div class="mx-4 flex-1 content-center" v-if="mainTab === 'search'">
             <IconField>
               <InputIcon>
                 <i class="pi pi-search"></i>
               </InputIcon>
               <InputText
+                v-model="searchText"
                 :placeholder="t('subscriptionPanel.searchBar.input')"
+                fluid
               />
+              <InputIcon>
+                <i
+                  class="pi pi-times cursor-pointer transition-colors hover:text-primary"
+                  v-if="searchText"
+                  @click="searchText = ''"
+                ></i>
+              </InputIcon>
             </IconField>
           </div>
         </TabList>
-        <TabPanels class="overflow-hidden rounded-lg shadow">
+        <TabPanels class="relative overflow-hidden rounded-lg shadow">
           <TabPanel value="follow">
             <KeepAlive>
               <FollowFeed v-if="mainTab === 'follow'" />
@@ -57,6 +70,14 @@ const mainTab = ref('subscription')
               <HotFeed v-if="mainTab === 'hot'" />
             </KeepAlive>
           </TabPanel>
+          <TabPanel value="search">
+            <KeepAlive>
+              <SearchFeed
+                v-if="mainTab === 'search'"
+                :searchText="searchText"
+              />
+            </KeepAlive>
+          </TabPanel>
         </TabPanels>
       </Tabs>
     </section>
@@ -66,7 +87,7 @@ const mainTab = ref('subscription')
       <!-- 用户卡片 -->
       <Card>
         <template #header>
-          <div class="flex items-center p-4">
+          <div class="flex items-center border-b p-4">
             <!-- 用户头像和信息 -->
             <template v-if="userStore.user">
               <Avatar
@@ -76,8 +97,11 @@ const mainTab = ref('subscription')
               ></Avatar>
 
               <div class="ml-4">
-                <div class="text-lg font-bold">
-                  <RouterLink to="/user/center">
+                <div>
+                  <RouterLink
+                    to="/user/center"
+                    class="text-lg font-bold transition-colors hover:text-blue-500"
+                  >
                     {{ userStore.user.username }}
                   </RouterLink>
                 </div>
@@ -87,6 +111,7 @@ const mainTab = ref('subscription')
                     :href="userStore.user.scholar_url"
                     target="_blank"
                     rel="noopener noreferrer"
+                    class="transition-colors hover:text-primary"
                   >
                     {{ t('userPanel.myScholarPage') }}
                   </a>
@@ -119,7 +144,7 @@ const mainTab = ref('subscription')
           </div>
         </template>
         <template #content>
-          <div>用户信息的内容。</div>
+          <UserStats />
         </template>
       </Card>
 
@@ -140,13 +165,13 @@ const mainTab = ref('subscription')
         <ScholarPanel />
       </Panel>
 
-      <Panel
+      <!-- <Panel
         :header="t('subscriptionPanel.institutions.header')"
         class="overflow-hidden rounded-xl shadow"
         toggleable
       >
         <InstitutionPanel />
-      </Panel>
+      </Panel> -->
     </aside>
   </div>
 </template>
@@ -158,6 +183,7 @@ const mainTab = ref('subscription')
     "follow": "关注动态",
     "subscription": "订阅推荐",
     "hot": "热点追踪",
+    "search": "搜索",
   },
   "userPanel": {
     "myScholarPage": "我的学术主页",
@@ -168,7 +194,7 @@ const mainTab = ref('subscription')
   },
   "subscriptionPanel": {
     "searchBar": {
-      "input": "搜索...",
+      "input": "搜索作者或话题...",
     },
     "topics": {
       "header": "订阅话题",

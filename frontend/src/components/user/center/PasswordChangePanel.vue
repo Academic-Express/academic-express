@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useToast } from 'primevue'
-import { AxiosError } from 'axios'
 import z from 'zod'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 
-import { changePassword, type ErrorResponse } from '@/services/api'
+import { changePassword } from '@/services/api'
+import { useCustomToast } from '@/services/toast'
 
 const { t } = useI18n()
-const toast = useToast()
+const toast = useCustomToast()
 
 const passwordSchema = toTypedSchema(
   z
@@ -24,7 +23,7 @@ const passwordSchema = toTypedSchema(
     }),
 )
 
-const { handleSubmit, errors, meta, isSubmitting } = useForm({
+const { handleSubmit, errors, meta, isSubmitting, resetForm } = useForm({
   validationSchema: passwordSchema,
   initialValues: {
     oldPassword: '',
@@ -44,6 +43,8 @@ const onChangePassword = handleSubmit(async values => {
       new_password: values.newPassword,
     })
 
+    resetForm()
+
     toast.add({
       severity: 'success',
       summary: t('toast.success'),
@@ -51,18 +52,7 @@ const onChangePassword = handleSubmit(async values => {
       life: 5000,
     })
   } catch (error) {
-    let detail = t('toast.unknownError')
-    if (error instanceof AxiosError && error.response?.data) {
-      const data = error.response.data as ErrorResponse
-      detail = data.detail ?? detail
-    }
-    console.error('Failed to change password:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('toast.error'),
-      detail: detail,
-      life: 5000,
-    })
+    toast.reportError(error)
   }
 })
 </script>
@@ -142,6 +132,7 @@ const onChangePassword = handleSubmit(async values => {
         <Button
           :label="t('password.conformButton')"
           :disabled="!meta.valid || isSubmitting"
+          :loading="isSubmitting"
           @click="onChangePassword"
         ></Button>
       </div>
