@@ -158,7 +158,7 @@ const { onClaimsUpdated } = useClaim()
 <template>
   <div class="flex justify-center">
     <div class="container mx-auto w-2/3 max-w-[960px] p-4">
-      <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950">
+      <div class="rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-900">
         <!-- Repository Title -->
         <div class="mb-4 flex items-center">
           <img

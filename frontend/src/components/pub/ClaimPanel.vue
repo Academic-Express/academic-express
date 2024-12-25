@@ -131,7 +131,7 @@ const onUnclaim = async () => {
 
 <template>
   <div
-    class="flex flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-950"
+    class="flex flex-col gap-4 rounded-lg bg-surface-0 p-6 shadow-md dark:bg-surface-900"
   >
     <div class="flex items-center">
       <!-- 面板标题 -->
