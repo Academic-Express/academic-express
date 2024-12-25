@@ -11,6 +11,7 @@ import {
 import { useEvent } from '@/bus'
 import GithubItem from './GithubItem.vue'
 import { useCustomToast } from '@/services/toast'
+import FeedSkeleton from './FeedSkeleton.vue'
 
 const { t } = useI18n()
 const toast = useCustomToast()
@@ -58,9 +59,7 @@ useEvent('subscriptionUpdated', fetchSubscriptionFeed)
     <hr class="my-4" />
   </template>
 
-  <template v-if="loading && subscriptionFeeds.length === 0">
-    <Skeleton v-for="i in 5" :key="i" class="mb-4" />
-  </template>
+  <FeedSkeleton v-if="loading && subscriptionFeeds.length === 0" />
 
   <p v-if="!loading" class="text-center text-muted-color">
     {{ subscriptionFeeds.length > 0 ? t('end') : t('empty') }}

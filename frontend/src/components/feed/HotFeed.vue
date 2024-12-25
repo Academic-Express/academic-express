@@ -6,6 +6,7 @@ import ArxivItem from './ArxivItem.vue'
 import GithubItem from './GithubItem.vue'
 import { FeedOrigin, getHotFeed, type HotFeed } from '@/services/api'
 import { useCustomToast } from '@/services/toast'
+import FeedSkeleton from './FeedSkeleton.vue'
 
 const { t } = useI18n()
 const toast = useCustomToast()
@@ -41,9 +42,7 @@ onMounted(fetchHotFeed)
     <hr class="my-4" />
   </template>
 
-  <template v-if="loading && hotFeeds.length === 0">
-    <Skeleton v-for="i in 5" :key="i" class="mb-4" />
-  </template>
+  <FeedSkeleton v-if="loading && hotFeeds.length === 0" />
 
   <p v-if="!loading" class="text-center text-muted-color">
     {{ hotFeeds.length > 0 ? t('end') : t('empty') }}

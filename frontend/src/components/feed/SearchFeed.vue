@@ -11,6 +11,7 @@ import {
   type HotFeed,
 } from '@/services/api'
 import { useCustomToast } from '@/services/toast'
+import FeedSkeleton from './FeedSkeleton.vue'
 
 const props = defineProps<{
   searchText: string
@@ -79,9 +80,7 @@ watch(
   </template>
 
   <template v-else>
-    <template v-if="loading">
-      <Skeleton v-for="i in 5" :key="i" class="mb-4" />
-    </template>
+    <FeedSkeleton v-if="loading" />
 
     <p v-else class="text-center text-muted-color">
       {{ t('placeholder') }}
