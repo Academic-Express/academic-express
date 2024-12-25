@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/user'
 import FollowFeed from '@/components/feed/FollowFeed.vue'
 import SubscriptionFeed from '@/components/feed/SubscriptionFeed.vue'
 import HotFeed from '@/components/feed/HotFeed.vue'
+import SearchFeed from '@/components/feed/SearchFeed.vue'
 import UserStats from '@/components/home/UserStats.vue'
 import TopicPanel from '@/components/subscription/TopicPanel.vue'
 import ScholarPanel from '@/components/subscription/ScholarPanel.vue'
@@ -19,6 +20,7 @@ const userStore = useUserStore()
 useHead({ title: t('_title') })
 
 const mainTab = ref('subscription')
+const searchText = ref('')
 </script>
 
 <template>
@@ -31,18 +33,28 @@ const mainTab = ref('subscription')
           <Tab value="follow">{{ t('main.follow') }}</Tab>
           <Tab value="subscription">{{ t('main.subscription') }}</Tab>
           <Tab value="hot">{{ t('main.hot') }}</Tab>
-          <div class="ml-8 content-center">
+          <Tab value="search">{{ t('main.search') }}</Tab>
+          <div class="mx-4 flex-1 content-center" v-if="mainTab === 'search'">
             <IconField>
               <InputIcon>
                 <i class="pi pi-search"></i>
               </InputIcon>
               <InputText
+                v-model="searchText"
                 :placeholder="t('subscriptionPanel.searchBar.input')"
+                fluid
               />
+              <InputIcon>
+                <i
+                  class="pi pi-times cursor-pointer transition-colors hover:text-primary"
+                  v-if="searchText"
+                  @click="searchText = ''"
+                ></i>
+              </InputIcon>
             </IconField>
           </div>
         </TabList>
-        <TabPanels class="overflow-hidden rounded-lg shadow">
+        <TabPanels class="relative overflow-hidden rounded-lg shadow">
           <TabPanel value="follow">
             <KeepAlive>
               <FollowFeed v-if="mainTab === 'follow'" />
@@ -56,6 +68,14 @@ const mainTab = ref('subscription')
           <TabPanel value="hot">
             <KeepAlive>
               <HotFeed v-if="mainTab === 'hot'" />
+            </KeepAlive>
+          </TabPanel>
+          <TabPanel value="search">
+            <KeepAlive>
+              <SearchFeed
+                v-if="mainTab === 'search'"
+                :searchText="searchText"
+              />
             </KeepAlive>
           </TabPanel>
         </TabPanels>
@@ -163,6 +183,7 @@ const mainTab = ref('subscription')
     "follow": "关注动态",
     "subscription": "订阅推荐",
     "hot": "热点追踪",
+    "search": "搜索",
   },
   "userPanel": {
     "myScholarPage": "我的学术主页",
@@ -173,7 +194,7 @@ const mainTab = ref('subscription')
   },
   "subscriptionPanel": {
     "searchBar": {
-      "input": "搜索...",
+      "input": "搜索作者或话题...",
     },
     "topics": {
       "header": "订阅话题",

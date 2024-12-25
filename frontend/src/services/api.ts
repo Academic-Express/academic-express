@@ -188,6 +188,8 @@ export type SubscriptionFeed = Feed & {
 
 export type HotFeed = Feed & {}
 
+export type SearchResult = Feed & {}
+
 export interface BaseCollection {
   id: number
   item_type: FeedOrigin
@@ -337,6 +339,7 @@ export const URLS = {
   getFollowFeed: '/v1/feed/follow',
   getSubscriptionFeed: '/v1/feed/subscription',
   getHotFeed: '/v1/feed/hot',
+  getSearchResult: '/v1/feed/search',
 
   collections: '/v1/collections/',
   collection: (id: number) => `/v1/collections/${id}`,
@@ -434,6 +437,14 @@ export function getSubscriptionFeed() {
 
 export function getHotFeed() {
   return client.get<HotFeed[]>(URLS.getHotFeed)
+}
+
+export function getSearchResult(query: string) {
+  return client.get<SearchResult[]>(URLS.getSearchResult, {
+    params: {
+      q: query,
+    },
+  })
 }
 
 export function uploadAvatar(file: File) {
