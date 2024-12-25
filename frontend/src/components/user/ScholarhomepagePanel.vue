@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
@@ -43,7 +43,10 @@ const loadClaims = async () => {
   loading.value = true
   try {
     const currentUserId = userStore.user?.id
-    if (!currentUserId) return
+    if (!currentUserId) {
+      claims.value = []
+      return
+    }
 
     const response = await getUserClaims(currentUserId)
     claims.value = response.data
@@ -72,10 +75,7 @@ const onUnclaimResource = async (claim: UserResourceClaim) => {
   claims.value = claims.value.filter(c => c.id !== claim.id)
 }
 
-// 页面加载时调用
-onMounted(() => {
-  loadClaims()
-})
+watch(() => userStore.user, loadClaims, { immediate: true })
 </script>
 
 <template>

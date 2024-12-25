@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { onMounted, ref } from 'vue'
+import { onActivated, ref, watch } from 'vue'
 
 import {
   getTopicSubscriptions,
@@ -87,8 +87,9 @@ async function onRemoveTopic(index: number) {
   }
 }
 
-onMounted(async () => {
+const fetchTopics = async () => {
   if (!userStore.user) {
+    followedTopics.value = []
     return
   }
 
@@ -100,7 +101,11 @@ onMounted(async () => {
       summary: t('toast.fetchError'),
     })
   }
-})
+}
+
+watch(() => userStore.user, fetchTopics, { immediate: true })
+
+onActivated(fetchTopics)
 </script>
 
 <template>
