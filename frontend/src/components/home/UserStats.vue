@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onActivated, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { useUserStore } from '@/stores/user'
@@ -45,6 +45,10 @@ watch(
 )
 
 bus.on('subscriptionUpdated', () => {
+  fetchStats()
+})
+
+onActivated(() => {
   fetchStats()
 })
 </script>

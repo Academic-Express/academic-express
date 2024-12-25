@@ -73,11 +73,29 @@ function logout() {
           ></Button>
 
           <Button
+            icon="pi pi-home"
+            variant="text"
+            severity="contrast"
+            rounded
+            as="router-link"
+            :to="{ name: 'home' }"
+          ></Button>
+
+          <Button
+            icon="pi pi-user"
+            variant="text"
+            severity="contrast"
+            rounded
+            as="router-link"
+            :to="{ name: 'user-center' }"
+          ></Button>
+
+          <!-- <Button
             icon="pi pi-bell"
             variant="text"
             severity="contrast"
             rounded
-          ></Button>
+          ></Button> -->
 
           <template v-if="userStore.user">
             <Button
