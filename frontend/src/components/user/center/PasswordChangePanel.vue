@@ -63,11 +63,11 @@ const onChangePassword = handleSubmit(async values => {
     <div class="flex flex-col gap-2">
       <div class="flex justify-between">
         <label for="oldPassword"> {{ t('password.oldPassword') }}</label>
-        <span
+        <!-- <span
           class="cursor-pointer transition-colors text-muted-color hover:text-primary"
         >
           {{ t('password.forget') }}
-        </span>
+        </span> -->
       </div>
       <Password
         inputId="oldPassword"
