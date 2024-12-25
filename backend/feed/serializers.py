@@ -63,3 +63,9 @@ class HotFeedSerializer(FeedSerializer):
     """
     热门动态。
     """
+
+
+class SearchResultSerializer(FeedSerializer):
+    """
+    搜索结果。
+    """
