@@ -32,6 +32,12 @@ python manage.py runserver
 python manage.py test
 ```
 
+### Run performance tests
+
+```sh
+locust -f locustfile.py --host=http://localhost:8000
+```
+
 ### Format & lint
 
 ```sh
