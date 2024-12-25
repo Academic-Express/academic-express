@@ -55,6 +55,8 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
+      args:
+        - NPM_EXTRA_ARGS=${NPM_EXTRA_ARGS:-}
 
   nginx:
     image: academic-express/nginx
