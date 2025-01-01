@@ -175,8 +175,8 @@ def get_month_end_index(month: datetime) -> int:
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
-    page_links = soup.find("div", class_="paging").find_all("a")
-    if page_links:
+    paging = soup.find("div", class_="paging")
+    if paging is not None and (page_links := paging.find_all("a")):
         last_page_url = urljoin(url, page_links[-1]["href"])
         response = session.get(last_page_url)
         response.raise_for_status()
@@ -184,6 +184,9 @@ def get_month_end_index(month: datetime) -> int:
         soup = BeautifulSoup(response.text, "html.parser")
 
     entries = soup.find("dl", id="articles").find_all("dt")
+    if not entries:
+        return 0
+
     last_entry_id = entries[-1].find("a", title="Abstract")["id"]
     return int(last_entry_id.split(".")[-1]) + 1000
 
