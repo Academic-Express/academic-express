@@ -39,6 +39,11 @@ class Command(BaseCommand):
 
             ArxivEntry.objects.filter(arxiv_id__in=arxiv_ids).update(synced=True)
 
+        response = session.post('/save')
+        response.raise_for_status()
+
+        self.stdout.write(self.style.SUCCESS('Successfully synced arXiv entries.'))
+
 
 def generate_index_text(arxiv_entry: ArxivEntry) -> str:
     """

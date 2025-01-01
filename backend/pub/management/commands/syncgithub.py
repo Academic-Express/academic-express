@@ -39,6 +39,11 @@ class Command(BaseCommand):
 
             GithubRepo.objects.filter(full_name__in=repo_names).update(synced=True)
 
+        response = session.post('/save')
+        response.raise_for_status()
+
+        self.stdout.write(self.style.SUCCESS('Successfully synced GitHub repos.'))
+
 
 def generate_index_text(github_repo: GithubRepo) -> str:
     """
